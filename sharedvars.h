@@ -1,12 +1,12 @@
 //sharedvars.h
+#ifndef sharedvars_h
+#define sharedvars_h
+
 #include "containers.h"
 #include <queue>
 #include <mutex>
 
 using namespace std;
-
-#ifndef sharedvars_h
-#define sharedvars_h
 
 //Shared Data
 int batteryLevel;
