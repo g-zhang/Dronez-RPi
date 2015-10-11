@@ -40,6 +40,7 @@ namespace SharedVars {
   extern std::mutex receiveBufferLock;
 
   //getters and setters
+  void init();
   int getBatteryLevel();
 }
 

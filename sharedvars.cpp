@@ -1,5 +1,6 @@
 #include "sharedvars.h"
 
+#include <iostream>
 using namespace std;
 
 namespace SharedVars {
@@ -32,6 +33,11 @@ namespace SharedVars {
   std::mutex processedImagesLock;
   std::mutex sendBufferLock;
   std::mutex receiveBufferLock;
+}
+
+void SharedVars::init() {
+  std::cout << "Initializing shared vars" << endl;
+
 }
 
 int SharedVars::getBatteryLevel() {
