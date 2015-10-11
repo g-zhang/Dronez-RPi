@@ -6,35 +6,42 @@
 #include <queue>
 #include <mutex>
 
-//Shared Data
-int batteryLevel;
-Vector3d gyroData;
-Vector3d accData;
-double barometerReading;
-double magData;
-FlightMode flightMode;
-std::queue<Vector3d> gpsFlightPlan;
-Vector3d currentGpsPosition;
-double ultrasonicReading;
-std::queue<void*> imageRecQueue;
-int imageSize;
-std::queue<void*> processedImages;
-char* sendBuffer;
-char* receiveBuffer;
 
-//Variable locks
-std::mutex batteryLevelLock;
-std::mutex gyroDataLock;
-std::mutex accDataLock;
-std::mutex barometerReadingLock;
-std::mutex magDataLock;
-std::mutex flightModeLock;
-std::mutex gpsFlightPlanLock;
-std::mutex ultrasonicReadingLock;
-std::mutex imageRecQueueLock;
-std::mutex imageSizeLock;
-std::mutex processedImagesLock;
-std::mutex sendBufferLock;
-std::mutex receiveBufferLock;
+namespace SharedVars {
+  //Shared Data
+  extern int batteryLevel;
+  extern Vector3d gyroData;
+  extern Vector3d accData;
+  extern double barometerReading;
+  extern double magData;
+  extern FlightMode flightMode;
+  extern std::queue<Vector3d> gpsFlightPlan;
+  extern Vector3d currentGpsPosition;
+  extern double ultrasonicReading;
+  extern std::queue<void*> imageRecQueue;
+  extern int imageSize;
+  extern std::queue<void*> processedImages;
+  extern char* sendBuffer;
+  extern char* receiveBuffer;
+
+  //Variable locks
+  extern std::mutex batteryLevelLock;
+  extern std::mutex gyroDataLock;
+  extern std::mutex accDataLock;
+  extern std::mutex barometerReadingLock;
+  extern std::mutex magDataLock;
+  extern std::mutex flightModeLock;
+  extern std::mutex gpsFlightPlanLock;
+  extern std::mutex ultrasonicReadingLock;
+  extern std::mutex imageRecQueueLock;
+  extern std::mutex imageSizeLock;
+  extern std::mutex processedImagesLock;
+  extern std::mutex sendBufferLock;
+  extern std::mutex receiveBufferLock;
+
+  //getters and setters
+  int getBatteryLevel();
+}
+
 
 #endif

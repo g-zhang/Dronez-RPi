@@ -1,5 +1,6 @@
 #include "XbeeInterface.h"
 #include <iostream>
+#include "../sharedvars.h"
 
 using namespace std;
 

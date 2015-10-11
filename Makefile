@@ -1,7 +1,7 @@
 BINFILE = fly
 
 # List of .cpp files
-CPPFILES = main.cpp OnboardThreads/*.cpp
+CPPFILES = main.cpp sharedvars.cpp OnboardThreads/*.cpp
 
 CFLAGS = -Wall -std=c++11
 
