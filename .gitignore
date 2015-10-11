@@ -1,0 +1,5 @@
+#ignore obj files
+*.o
+
+#ignore the binary
+fly

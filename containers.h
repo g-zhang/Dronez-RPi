@@ -8,7 +8,7 @@ enum FlightMode {
     LAND
 };
 
-struct Coord3d {
+struct Vector3d {
     double x;
     double y;
     double z;

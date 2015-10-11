@@ -14,7 +14,7 @@ int main(){
     init();
 
     //start threads
-    thread XbeeInterfaceThread(xbee_main);
+    std::thread XbeeInterfaceThread(xbee_main);
     //XbeeInterfaceThread.detach();
     XbeeInterfaceThread.join();
 
