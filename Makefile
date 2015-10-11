@@ -1,12 +1,17 @@
 BINFILE = fly
 
+MAINCPP = main.cpp
+TESTCPP = tester.cpp
 # List of .cpp files
-CPPFILES = main.cpp sharedvars.cpp OnboardThreads/*.cpp
+CPPFILES = sharedvars.cpp OnboardThreads/*.cpp
 
 CFLAGS = -Wall -std=c++11
 
 all:
-	g++ $(CFLAGS) $(CPPFILES) -o $(BINFILE) -lpthread
+	g++ $(CFLAGS) $(MAINCPP) $(CPPFILES) -o $(BINFILE) -lpthread
+
+test:
+	g++ $(CFLAGS) $(TESTCPP) $(CPPFILES) -o $(BINFILE) -lpthread
 
 clean:
 	rm -f $(BINFILE)
