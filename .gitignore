@@ -1,5 +1,5 @@
 #ignore obj files
 *.o
 
-#ignore the binary
-fly
+#ignore the binaries
+fly*
