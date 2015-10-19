@@ -4,45 +4,53 @@
 using namespace std;
 
 namespace SharedVars {
-  int batteryLevel;
-  Vector3d gyroData;
-  Vector3d accData;
-  double barometerReading;
-  double magData;
-  FlightMode flightMode;
-  std::queue<Vector3d> gpsFlightPlan;
-  Vector3d currentGpsPosition;
-  double ultrasonicReading;
-  std::queue<void*> imageRecQueue;
-  int imageSize;
-  std::queue<void*> processedImages;
-  char* sendBuffer;
-  char* receiveBuffer;
-
-  //Variable locks
+  double batteryLevel;
   std::mutex batteryLevelLock;
+
+  Vector3d gyroData;
   std::mutex gyroDataLock;
+
+  Vector3d accData;
   std::mutex accDataLock;
-  std::mutex barometerReadingLock;
+
+  Vector3d magData;
   std::mutex magDataLock;
+
+  double barometerReading;
+  std::mutex barometerReadingLock;
+
+  double heading;
+  std::mutex headingDataLock;
+
+  FlightMode flightMode;
   std::mutex flightModeLock;
+
+  std::queue<Vector3d> gpsFlightPlan;
   std::mutex gpsFlightPlanLock;
+
+  Vector3d currentGpsPosition;
+  std::mutex currentGpsPositionLock;
+
+  double ultrasonicReading;
   std::mutex ultrasonicReadingLock;
+
+  std::queue<void*> imageRecQueue;
   std::mutex imageRecQueueLock;
+
+  int imageSize;
   std::mutex imageSizeLock;
+
+  std::queue<void*> processedImages;
   std::mutex processedImagesLock;
+
+  char* sendBuffer;
   std::mutex sendBufferLock;
+
+  char* receiveBuffer;
   std::mutex receiveBufferLock;
 }
 
 void SharedVars::init() {
   std::cout << "Initializing shared vars" << endl;
 
-}
-
-int SharedVars::getBatteryLevel() {
-  batteryLevelLock.lock();
-  int ret = batteryLevel;
-  batteryLevelLock.unlock();
-  return ret;
 }
