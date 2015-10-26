@@ -5,6 +5,8 @@
 #include "containers.h"
 #include <queue>
 #include <mutex>
+#include <string>
+#include <iostream>
 
 
 namespace SharedVars {
@@ -53,9 +55,16 @@ namespace SharedVars {
   extern char* receiveBuffer;
   extern std::mutex receiveBufferLock;
 
+  extern std::mutex printLock;
   //methods
   void init();
 }
 
+template <typename T>
+void dprint(const T &msg) {
+  SharedVars::printLock.lock();
+  std::cout << msg << std::endl;
+  SharedVars::printLock.unlock();
+}
 
 #endif

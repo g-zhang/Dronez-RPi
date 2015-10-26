@@ -4,6 +4,8 @@
 using namespace std;
 
 namespace SharedVars {
+  std::mutex printLock;
+
   double batteryLevel;
   std::mutex batteryLevelLock;
 
