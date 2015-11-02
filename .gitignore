@@ -3,3 +3,6 @@
 
 #ignore the binaries
 fly*
+
+#ignore test Image files
+OnboardThreads/TestImages/*
