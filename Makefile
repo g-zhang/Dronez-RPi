@@ -10,7 +10,7 @@ ROADDIR = OnboardThreads/RoadDetection
 MAINCPP = main.cpp
 TESTCPP = tester.cpp
 # List of .cpp files
-CPPFILES = sharedvars.cpp OnboardThreads/*.cpp
+CPPFILES = sharedvars.cpp OnboardThreads/*.cpp OnboardThreads/*.c
 OPENCV_LIBS = -lopencv_core -lopencv_imgproc -lopencv_highgui
 
 
