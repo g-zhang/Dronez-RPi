@@ -33,6 +33,9 @@ namespace SharedVars {
   Vector3d currentGpsPosition;
   std::mutex currentGpsPositionLock;
 
+  double currentGpsSpeed;
+  std::mutex currentGpsSpeedLock;
+
   double ultrasonicReading;
   std::mutex ultrasonicReadingLock;
 
