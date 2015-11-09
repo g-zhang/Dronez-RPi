@@ -80,12 +80,7 @@ double gps_deg_dec(double deg_point)
     return round(absdlat + (absmlat/60) + (absslat/3600)) /1000000;
 }
 
-loc_t *GPS_info(){
-    static int intialize = 1;
-    if(intialize){
-        gps_init();
-        intialize = 0;
-    }   
+loc_t *GPS_info(){  
     static loc_t data;
     gps_location(&data);
     return &data;
