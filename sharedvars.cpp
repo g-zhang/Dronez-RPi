@@ -4,6 +4,9 @@
 using namespace std;
 
 namespace SharedVars {
+  std::queue<Queue_send> infosend;
+  std::mutex infosendLock;
+
   std::mutex printLock;
 
   double batteryLevel;
@@ -50,6 +53,8 @@ namespace SharedVars {
 
   char* receiveBuffer;
   std::mutex receiveBufferLock;
+
+  
 }
 
 void SharedVars::init() {
