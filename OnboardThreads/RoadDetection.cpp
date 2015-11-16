@@ -23,8 +23,7 @@ vector<Vec4i> findLines(Mat src)
 	Canny(src, dst, 50, 200, 3);
 	cvtColor(dst, cdst, CV_GRAY2BGR);
 	GaussianBlur( dst, smoothedImage, Size( 31, 31 ), 0, 0 );
-
-	HoughLinesP(dst, lines, 1, CV_PI/180, 50, 90, 5 );
+	HoughLinesP(dst, lines, 4, CV_PI/180, 100, 50, 10 );
 	for( size_t i = 0; i < lines.size(); i++ )
 	{
 	 	Vec4i l = lines[i];
@@ -43,6 +42,7 @@ vector<Vec4i> findLines(Mat src)
 //average line of all of them. Returned as a Vec4i.
 Vec4i findAverageLine(vector<Vec4i> lines)
 {
+	
 	int startX = 0;
 	int startY = 0;
 	int endX = 0;
@@ -101,42 +101,78 @@ double findHorizontalShiftAmount( double height, Vec4i line, double imageWidth){
 
 }
 
+Mat takePic(raspicam::RaspiCam_Cv Camera) {
+	cv::Mat image;
+	cout<<"Capturing"<<endl;
+
+	double time_=cv::getTickCount();
+	for(int i = 0; i < 31; ++i){
+		Camera.grab();
+		Camera.retrieve ( image );
+		if(i ==30)
+			cv::imwrite ("image"+std::to_string(1)+".jpg",image );
+	}
+
+	Camera.release();
+	return image;
+}
+
 void roadDetection_main(){
-	string file = "OnboardThreads/TestImages/12.jpg";	
-	const char* filename = file.c_str();
- 	Mat src = imread(filename, 0);
-
-	vector<Vec4i> lines = findLines(src);
-
-	if(lines.size() == 0)
-		cout << "No lines found" << endl;
 	
-	int centerX = src.rows / 2;
-	int centerY = src.cols / 2;
-	Vec4i avgLine = findAverageLine(lines);
+	raspicam::RaspiCam_Cv Camera;
 
-	cout << "Average Start: (" << avgLine[0] << "," << avgLine[1] << ")" << endl;
-	cout << "Average End: (" << avgLine[2] << "," << avgLine[3] << ")" << endl;
-	
-	Vec4i newLine( avgLine[0]-centerX, centerY-avgLine[1], avgLine[2]-centerX,
-			centerY-avgLine[3] );
-	
-	double rotateAmount = findRotationAmount(newLine);
-	
-	SharedVars::ultrasonicReadingLock.lock();
-	double droneHeight = SharedVars::ultrasonicReading;
-	SharedVars::ultrasonicReadingLock.unlock();	
-	double horizontalShift = findHorizontalShiftAmount(droneHeight, newLine, src.rows);	
+	Camera.set ( CV_CAP_PROP_FRAME_WIDTH,1920  );
+	Camera.set ( CV_CAP_PROP_FRAME_HEIGHT, 1080 );
+	Camera.set ( CV_CAP_PROP_BRIGHTNESS,50  );
+	Camera.set ( CV_CAP_PROP_CONTRAST ,50  );
+	Camera.set ( CV_CAP_PROP_SATURATION, 50  );
+	Camera.set ( CV_CAP_PROP_GAIN, 50  );
+	cout<<"Connecting to camera"<<endl;
+	if ( !Camera.open() ) {
+		cerr<<"Error opening camera"<<endl;
+		return;
+	}
+	cout<<"Connected to camera ="<<Camera.getId() <<endl;
+	while(true){
+		Mat src = takePic(Camera);
+		vector<Vec4i> lines = findLines(src);
+		if(lines.size() == 0){
+			namedWindow("pic",CV_WINDOW_NORMAL);
+			imshow("pic", src);
+			resizeWindow("pic",800,400);
+			waitKey();
+			cout << "No lines found" << endl;
+			continue;
+		}
+		
+		int centerX = src.rows / 2;
+		int centerY = src.cols / 2;
+		Vec4i avgLine = findAverageLine(lines);
 
-	cout << rotateAmount << endl;
-	cout << horizontalShift << endl;
+		cout << "Average Start: (" << avgLine[0] << "," << avgLine[1] << ")" << endl;
+		cout << "Average End: (" << avgLine[2] << "," << avgLine[3] << ")" << endl;
+		
+		Vec4i newLine( avgLine[0]-centerX, centerY-avgLine[1], avgLine[2]-centerX,
+				centerY-avgLine[3] );
+		
+		double rotateAmount = findRotationAmount(newLine);
+		
+		SharedVars::ultrasonicReadingLock.lock();
+		double droneHeight = SharedVars::ultrasonicReading;
+		SharedVars::ultrasonicReadingLock.unlock();	
+		double horizontalShift = findHorizontalShiftAmount(droneHeight, newLine, src.rows);	
+
+		cout << rotateAmount << endl;
+		cout << horizontalShift << endl;
 
 
-	line( src, Point(avgLine[0], avgLine[1]), Point(avgLine[2], avgLine[3]), Scalar(0,0,255), 3, CV_AA);
-	namedWindow("avgLine",CV_WINDOW_NORMAL);
-	imshow("avgLine", src);
-	resizeWindow("avgLine",800,400);
-	waitKey();
+		line( src, Point(avgLine[0], avgLine[1]), Point(avgLine[2], avgLine[3]), Scalar(0,0,255), 3, CV_AA);
+		namedWindow("avgLine",CV_WINDOW_NORMAL);
+		imshow("avgLine", src);
+		imwrite("avgLine.jpg", src);
+		resizeWindow("avgLine",800,400);
+		waitKey();
+	}
 }
 
 
