@@ -19,11 +19,14 @@ CPPFILES_NOCV = sharedvars.cpp $(filter-out $(ROADDETECTIONCPP), $(wildcard Onbo
 
 
 # COMPILER FLAGS
-CFLAGS = -Wall -std=c++11
+CFLAGS = -Wall -std=c++11 -O3
 
 # FLAVORS
 all:
 	g++ $(CFLAGS) $(MAINCPP) $(CPPFILES) $(OPENCV_LIBS) -o $(BINFILE) -lpthread
+
+nocv:
+	g++ $(CFLAGS) $(MAINCPP) $(CPPFILES_NOCV) -o $(RPIBIN) -lpthread
 
 test:
 	g++ $(CFLAGS) $(TESTCPP) $(CPPFILES) $(OPENCV_LIBS) -o $(BINFILE) -lpthread
