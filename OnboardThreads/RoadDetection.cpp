@@ -88,6 +88,11 @@ double findRotationAmount(Vec4i avgLine)
 	return rotateAmount;
 }
 
+double CalculatePixelToMeters(double height, double imageWidth){
+	double pictureWidth = height * tan(53.5);
+	return pictureWidth / imageWidth;
+}
+
 double findHorizontalShiftAmount( double height, Vec4i line, double imageWidth){
 	//Our Camera has a viewing angle of 53.5 degrees
 	//This calculate the width of the picture in meters
@@ -101,10 +106,50 @@ double findHorizontalShiftAmount( double height, Vec4i line, double imageWidth){
 
 }
 
+RouteInfo findLineEquation(Vec4i avgLine, double pixelToMeters){
+	double slope = 0;
+	double stepDistance = 5;
+
+	slope = (avgLine[0] - avgLine[2]) / (avgLine[1] - avgLine[3]);
+	double oldX = (avgLine[0] + avgLine[2]) / 2;
+	double oldY = (avgLine[1] + avgLine[3]) / 2;
+	
+	double intercept = (avgLine[1] - (avgLine[0] * slope));
+
+	double r = sqrt(1 + (slope * slope));
+	
+	double rot = findRotationAmount(avgLine);
+	bool negativeSlope = false;
+	if(rot < 0){
+		negativeSlope = true;
+		rot += 90;
+	}
+	double xMovement = stepDistance * cos(rot);
+	double yMovement = stepDistance * sin(rot);
+
+	double newX = 0;
+	if(negativeSlope)
+		newX = oldX - xMovement;
+	else
+		newX = oldX + xMovement;
+
+	newY = oldY + yMovement;
+	
+	double distance = sqrt((newX * newX) + (newY * newY)) * pixelToMeters;
+
+	double heading = atan2(newY, newX) * 180 / M_PI;
+
+	RouteInfo routeInfo;
+	routeInfo.distance = distance;
+	routeInfo.heading = heading;
+
+	return routeInfo;
+}
+
+
 Mat takePic(raspicam::RaspiCam_Cv Camera) {
 	cv::Mat image;
 	cout<<"Capturing"<<endl;
-
 	double time_=cv::getTickCount();
 	for(int i = 0; i < 31; ++i){
 		Camera.grab();

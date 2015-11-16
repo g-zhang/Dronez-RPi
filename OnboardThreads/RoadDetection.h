@@ -15,6 +15,11 @@
 
 using namespace std;
 
+struct routeInfo{
+	double distance;
+	double heading;
+};
+
 vector<cv::Vec4i> findLines(cv::Mat src);
 
 cv::Vec4i findAverageLine(vector<cv::Vec4i> lines);
