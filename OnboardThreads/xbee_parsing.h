@@ -3,6 +3,8 @@
 
 void gps_parse(const char *data,const int size);
 
+void flight_mode(const char *data,const int size);
+
 struct gps_info {
     double latitude;
     double longitude;

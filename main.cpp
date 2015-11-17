@@ -23,6 +23,7 @@ int main(){
     std::thread AutoFlightThread(autoflight_main);
     std::thread XbeeInterfaceThread(xbee_main);
     thread Xbee_read_in(read_in);
+    send_pic("woo.jpg");
     //loc_t gps_data;
     //gps_location(&gps_data);
     //cout<<gps_data.speed<<endl;
