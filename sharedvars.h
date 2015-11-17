@@ -4,6 +4,7 @@
 
 #include "containers.h"
 #include "OnboardThreads/XbeeInterface.h"
+#include <deque>
 #include <queue>
 #include <mutex>
 #include <string>
@@ -11,7 +12,7 @@
 
 
 namespace SharedVars {
-  extern std::queue<Queue_send> infosend;
+  extern std::deque<Queue_send> infosend;
   extern std::mutex infosendLock;
 
   extern double batteryLevel;

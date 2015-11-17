@@ -160,21 +160,11 @@ bool parseAQ32Sensors(string sensordata) {
   return true;
 }
 
-void switchAQMode(int mode) {
-  if(mode == 0 || mode == 1) {
-    AQFDLock.lock();
-    AQ32SendBuffer[0] = 'T';
-    sprintf(AQ32SendBuffer + 1, "%d;w;", mode);
-    AQ32SendBufferLen = strlen(AQ32SendBuffer);
-    AQFDLock.unlock();
-  }
-}
-
-void createAQFlightCommand(int mode, int RPiPITCH, int RPiROLL, double RPiHeading, double RPiAltitude) {
+void createAQFlightCommand(int mode, int RPiPITCH, int RPiYAW, double RPiAltitude) {
   AQFDLock.lock();
   memset(AQ32SendBuffer, '\0', AQ_SENDBUF_SIZE);
   AQ32SendBuffer[0] = 'S';
-  sprintf(AQ32SendBuffer + 1, "%d;%d;%d;%.2f;%.2f;w;", mode, RPiPITCH, RPiROLL, RPiHeading, RPiAltitude);
+  sprintf(AQ32SendBuffer + 1, "%d;%d;%d;%.2f;", mode, RPiPITCH, RPiYAW, RPiAltitude);
   AQ32SendBufferLen = strlen(AQ32SendBuffer);
   AQFDLock.unlock();
 }
@@ -192,6 +182,31 @@ void AQCVFlight() {
   //cv mode
 }
 
+void AQDebugMode() {
+  //turn back and forth every ~3 sec
+  static long counter = 0;
+  static int turnval = TURN_YAW_OFFSET;
+  if(counter % 10 == 0) {
+    turnval *= -1;
+  }
+  createAQFlightCommand(AUTO_MODE, DEFAULT_PITCH_VALUE, DEFAULT_YAW_VALUE + turnval, 0);
+  dprint(DEFAULT_YAW_VALUE + turnval);
+  counter++;
+}
+
+void AQDebugMode2() {
+  static long counter2 = 0;
+  static int pitchval = DEFAULT_PITCH_VALUE;
+  static int offset = -10;
+  if(counter2 % 10 == 0) {
+    offset *= -1;
+  }
+  pitchval += offset;
+  createAQFlightCommand(AUTO_MODE, pitchval, DEFAULT_YAW_VALUE, 0);
+  dprint(pitchval);
+  counter2++;
+}
+
 void AQGPSFlight() {
   //gps mode
   SharedVars::currentGpsPositionLock.lock();
@@ -204,31 +219,38 @@ void AQGPSFlight() {
 
   if(SharedVars::gpsFlightPlan.empty()) { //queue is empty, don't do anything
 
-    createAQFlightCommand(MANUAL_MODE, DEFAULT_PITCH_VALUE, 1500, DEFAULT_YAW_VALUE, SharedVars::barometerReading);
+    createAQFlightCommand(MANUAL_MODE, DEFAULT_PITCH_VALUE, DEFAULT_YAW_VALUE, 0);
 
   } else { //otherwise perform auto gps flight
 
     double distancetoTarget = findGPSDistance(SharedVars::currentGpsPosition, SharedVars::gpsFlightPlan.front());
     double headingtoTarget = findGPSHeading(SharedVars::currentGpsPosition, SharedVars::gpsFlightPlan.front());
+    double angleDeltaToTarget = findRelativeHeading(SharedVars::heading, headingtoTarget);
 
     if(distancetoTarget <= GPS_DIST) { //see if we have arrived within 3 meters of our target
       //remove the the waypoint from the queue
       SharedVars::gpsFlightPlan.pop();
       //reset all flight vals and have the drone keep over point until next loop
-      createAQFlightCommand(MANUAL_MODE, DEFAULT_PITCH_VALUE, 1500, DEFAULT_YAW_VALUE, SharedVars::barometerReading);
+      createAQFlightCommand(MANUAL_MODE, DEFAULT_PITCH_VALUE, DEFAULT_YAW_VALUE, 0);
 
     } else { //otherwise send flight values
       //correct heading
-      if(abs(headingtoTarget - SharedVars::heading) > GPS_HEADING_ERROR_MARGIN) {
+      if(abs(angleDeltaToTarget) > GPS_HEADING_ERROR_MARGIN) {
         //if our heading is not correct, turn by DEFAULT_YAW_VALUE radians
-        createAQFlightCommand(AUTO_MODE, DEFAULT_PITCH_VALUE, 1500, TURN_YAW_VALUE, SharedVars::barometerReading);
+        int commandyaw = DEFAULT_YAW_VALUE;
+        if(angleDeltaToTarget < 0) {
+          commandyaw -= TURN_YAW_OFFSET;
+        } else if(angleDeltaToTarget > 0) {
+          commandyaw += TURN_YAW_OFFSET;
+        }
+        createAQFlightCommand(AUTO_MODE, DEFAULT_PITCH_VALUE, commandyaw, 0);
 
       //corect speed/pitch
       } else {
         //calculate estimated position until next loop
         //double estimatedDistance = (AQ_TRANSFER_RATE / MICROSECOND) * SharedVars::currentGpsSpeed;
         //adjust pitch angle to move craft forwarding
-        createAQFlightCommand(AUTO_MODE, TURN_PITCH_VALUE, 1500, DEFAULT_YAW_VALUE, SharedVars::barometerReading);
+        createAQFlightCommand(AUTO_MODE, TURN_PITCH_VALUE, DEFAULT_YAW_VALUE, SharedVars::barometerReading);
       }
     }
   }
@@ -242,11 +264,15 @@ void AQGPSFlight() {
 
 void AQFlightLogic(int aqfd) {
   SharedVars::flightModeLock.lock();
+  SharedVars::flightMode = LAND;
   if(SharedVars::flightMode == GPS) {
     AQGPSFlight();
   }
   if(SharedVars::flightMode == CVMODE) {
     AQCVFlight();
+  }
+  if(SharedVars::flightMode == LAND) {
+    AQDebugMode();
   }
   sendAQFlightCommand(aqfd);
   SharedVars::flightModeLock.unlock();
@@ -256,7 +282,6 @@ void AQBoardIOMain() {
   dprint("Started AQ I/O Thread");
   int aqfd = openAQ32Connection();
   int timeoutcount = 0;
-  long counter = 0;
   //main loop
   while(1) {
     if(aqfd == -1) {
@@ -267,10 +292,7 @@ void AQBoardIOMain() {
       //reset timeout count after every successful I/O event
       timeoutcount = 0;
       //successful reading of AQ board state, calculate movements and send to AQ
-      counter++;
-      createAQFlightCommand(AUTO_MODE, counter, 1499, 3.01, 1.08);
-      sendAQFlightCommand(aqfd);
-      dprint(counter);
+      AQFlightLogic(aqfd);
     } else {
       //TIMED OUT BEHAVIOR
       dprint("ERROR: TIMEOUT 1");
@@ -304,6 +326,11 @@ double constrainRadians(const double &input, const double &min, const double &ma
     ret -= (2 * M_PI);
   }
   return ret;
+}
+
+double findRelativeHeading(const double &heading, const double &target) {
+  double relativeHeading = constrainRadians(target, -M_PI, M_PI) - constrainRadians(heading, -M_PI, M_PI);
+  return constrainRadians(relativeHeading, -M_PI, M_PI);
 }
 
 //expects degrees, returns radians between 0 and 2PI

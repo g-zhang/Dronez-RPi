@@ -4,7 +4,7 @@
 using namespace std;
 
 namespace SharedVars {
-  std::queue<Queue_send> infosend;
+  std::deque<Queue_send> infosend;
   std::mutex infosendLock;
 
   std::mutex printLock;

@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 //maximum packet size is 100 bytes
 #include <sharedvars.h>
 #include <containers.h>
@@ -72,10 +73,7 @@ void interpret_payload(Payload * p2Payload, int packet_type){
 			SharedVars::ultrasonicreading.lock();
 			SharedVars::ultrasonicReading = pay.ultra_data; 
 			SharedVars::ultrasonicreading.unlock();
-			
-			
-
-
+		
 		}
 	else 
 		{ 
