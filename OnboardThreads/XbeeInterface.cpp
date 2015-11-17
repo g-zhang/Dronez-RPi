@@ -12,14 +12,13 @@
 #include <queue>
 
 using namespace std;
-static int xbee_comm = set_serial();
 
 void xbee_main() {
     cout << "xbee thread started" << endl;
     while(1){
         if(SharedVars::infosend.size()){
-            SharedVars::infosend.front().send();
-            SharedVars::infosend.pop();
+            SharedVars::infosend.front().send_data();
+            SharedVars::infosend.pop_front();
         }
         usleep(100);
     }
@@ -30,6 +29,7 @@ void read_in(){
     char buffer[5];
     int state = 0;
     int size = 0;
+    int which_mes = 0;
     int i_data = 0;
     char type;
     char data[5000];
@@ -56,6 +56,10 @@ void read_in(){
                     state++;
                     if (i_data == size){
                         cout<<"Parsing\n";
+                        SharedVars::infosend.push_front(
+                            Queue_send( &which_mes, sizeof(which_mes),
+                                'r')
+                        );
                         parse(data, size, type);
                     }
                     else{
@@ -84,12 +88,13 @@ void read_in(){
             {
                 type = buffer[0];
 
-                for (int i = 0; i < 2;)
+                for (int i = 0; i < 3;)
                 {
                     if(read(xbee_comm,&buffer[i],1) > 0){
-                        size = buffer[0];
+                        which_mes = buffer[0];
+                        size = buffer[1];
                         size = size << 8;
-                        size += buffer[1] & 255;
+                        size += buffer[2] & 255;
                         //cout<<"size"<<size<<endl;
                         i++;
                     }
@@ -103,7 +108,7 @@ void read_in(){
     usleep(100);
 }
 
-void send_data(const void *c, int size, const char &code){
+void send_data(const void *c, int size, const char &code, const int &which){
     cout<<size<<endl;
 	char send[size + 8];
 	send[0] = 133;
@@ -128,7 +133,7 @@ void send_data(const void *c, int size, const char &code){
         cout<<i<<" ";
     } for debugging*/
     cout<<endl;
-    write(xbee_comm,send,size);
+    write(which,send,size);
     /*for(int i= 0; i < size;i+=100){
         if(i + 100 > size){
             write(xbee_comm,&send[i],size - i);
@@ -150,7 +155,7 @@ void send_pic(const char *name){
     lseek(fd,0,SEEK_SET);
     char pic_info[length];
     read(fd, pic_info, length);
-    send_data(pic_info, length,'p');
+    send_data(pic_info, length,'p', xbee_pic);
 }
 
 void parse(char *data, int size, char type){
@@ -159,7 +164,7 @@ void parse(char *data, int size, char type){
     }
 }
 
-int set_serial(){
+int set_serial(int which){
     struct termios tio;
     struct termios stdio;
     //struct termios old_stdio;
@@ -184,12 +189,23 @@ int set_serial(){
     tio.c_lflag=0;
     tio.c_cc[VMIN]=1;
     tio.c_cc[VTIME]=5;
-    if((tty_fd = open(MODEM , O_RDWR | O_NONBLOCK)) == -1){
-        printf("Error while opening\n"); // Just if you want user interface error control
-        return -1;
+    if(which == 0){
+        if((tty_fd = open(MODEM , O_RDWR | O_NONBLOCK)) == -1){
+            printf("Error while opening\n"); // Just if you want user interface error control
+            return -1;
+        }
+        else{
+    	   cout<<"Xbee opened on "<<MODEM<<'\n';
+        }
     }
-    else{
-    	cout<<"Xbee opened on "<<MODEM<<'\n';
+    else if(which == 1){
+        if((tty_fd = open(MODEM_PIC , O_RDWR | O_NONBLOCK)) == -1){
+            printf("Error while opening\n"); // Just if you want user interface error control
+            return -1;
+        }
+        else{
+           cout<<"Xbee opened on "<<MODEM_PIC <<'\n';
+        }
     }
     cfsetospeed(&tio,BAUDRATE);    
     cfsetispeed(&tio,BAUDRATE);            // baudrate is declarated above
