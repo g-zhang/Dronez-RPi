@@ -124,8 +124,9 @@ string performAQ32IO(int aqfd) {
     AQ32RecvBuffer[size] ='\0'; //null terminate string
 
     SharedVars::printLock.lock();
-    printf("size:%i  vals:%i\n", size, num_vals);
-    printf("%s\n", AQ32RecvBuffer);
+    // printf("size:%i  vals:%i\n", size, num_vals);
+    // printf("%s\n", AQ32RecvBuffer);
+    cout << AQ32RecvBuffer[0] << endl;
     SharedVars::printLock.unlock();
   }
 
@@ -156,11 +157,14 @@ bool parseAQ32Sensors(string sensordata) {
   SharedVars::heading = stod(data[HEADING]);
   SharedVars::headingDataLock.unlock();
 
-  cout << SharedVars::accData.y << " " <<  SharedVars::accData.z << " " << SharedVars::heading << " " << SharedVars::barometerReading << endl;
+  //cout << SharedVars::accData.y << " " <<  SharedVars::accData.z << " " << SharedVars::heading << " " << SharedVars::barometerReading << endl;
   return true;
 }
 
 void createAQFlightCommand(int mode, int RPiPITCH, int RPiYAW, double RPiAltitude) {
+  SharedVars::printLock.lock();
+  cout << mode << " " << RPiPITCH << " " << RPiYAW << " " << RPiAltitude << endl;
+  SharedVars::printLock.unlock();
   AQFDLock.lock();
   memset(AQ32SendBuffer, '\0', AQ_SENDBUF_SIZE);
   AQ32SendBuffer[0] = 'S';
@@ -209,8 +213,8 @@ void AQDebugMode2() {
 
 void AQGPSFlight() {
   //gps mode
-  SharedVars::currentGpsPositionLock.lock();
   SharedVars::gpsFlightPlanLock.lock();
+  SharedVars::currentGpsPositionLock.lock();
   SharedVars::headingDataLock.lock();
   SharedVars::barometerReadingLock.lock();
   SharedVars::currentGpsSpeedLock.lock();
@@ -218,7 +222,7 @@ void AQGPSFlight() {
   readGPSValues();
 
   if(SharedVars::gpsFlightPlan.empty()) { //queue is empty, don't do anything
-
+    dprint("GPS flight plan queue is empty!");
     createAQFlightCommand(MANUAL_MODE, DEFAULT_PITCH_VALUE, DEFAULT_YAW_VALUE, 0);
 
   } else { //otherwise perform auto gps flight
@@ -226,8 +230,15 @@ void AQGPSFlight() {
     double distancetoTarget = findGPSDistance(SharedVars::currentGpsPosition, SharedVars::gpsFlightPlan.front());
     double headingtoTarget = findGPSHeading(SharedVars::currentGpsPosition, SharedVars::gpsFlightPlan.front());
     double angleDeltaToTarget = findRelativeHeading(SharedVars::heading, headingtoTarget);
+    SharedVars::printLock.lock();
+    cout << "current lat/long: " << SharedVars::currentGpsPosition.x << " " << SharedVars::currentGpsPosition.y << endl;
+    cout << "distancetoTarget: " << distancetoTarget << endl;
+    cout << "headingtoTarget: " << headingtoTarget << endl;
+    cout << "angleDeltaToTarget: " << angleDeltaToTarget << endl;
+    SharedVars::printLock.unlock();
 
     if(distancetoTarget <= GPS_DIST) { //see if we have arrived within 3 meters of our target
+      dprint("Arrived at a GPS point");
       //remove the the waypoint from the queue
       SharedVars::gpsFlightPlan.pop();
       //reset all flight vals and have the drone keep over point until next loop
@@ -236,6 +247,7 @@ void AQGPSFlight() {
     } else { //otherwise send flight values
       //correct heading
       if(abs(angleDeltaToTarget) > GPS_HEADING_ERROR_MARGIN) {
+        dprint("Correcting Heading");
         //if our heading is not correct, turn by DEFAULT_YAW_VALUE radians
         int commandyaw = DEFAULT_YAW_VALUE;
         if(angleDeltaToTarget < 0) {
@@ -247,10 +259,11 @@ void AQGPSFlight() {
 
       //corect speed/pitch
       } else {
+        dprint("Correcting Pitch");
         //calculate estimated position until next loop
         //double estimatedDistance = (AQ_TRANSFER_RATE / MICROSECOND) * SharedVars::currentGpsSpeed;
         //adjust pitch angle to move craft forwarding
-        createAQFlightCommand(AUTO_MODE, TURN_PITCH_VALUE, DEFAULT_YAW_VALUE, SharedVars::barometerReading);
+        createAQFlightCommand(AUTO_MODE, TURN_PITCH_VALUE, DEFAULT_YAW_VALUE, 0);
       }
     }
   }
@@ -258,13 +271,13 @@ void AQGPSFlight() {
   SharedVars::currentGpsSpeedLock.unlock();
   SharedVars::barometerReadingLock.unlock();
   SharedVars::headingDataLock.unlock();
+  SharedVars::currentGpsPositionLock.unlock();
   SharedVars::gpsFlightPlanLock.unlock();
-  SharedVars::currentGpsPositionLock.lock();
 }
 
 void AQFlightLogic(int aqfd) {
   SharedVars::flightModeLock.lock();
-  SharedVars::flightMode = LAND;
+  SharedVars::flightMode = GPS;
   if(SharedVars::flightMode == GPS) {
     AQGPSFlight();
   }
@@ -272,7 +285,7 @@ void AQFlightLogic(int aqfd) {
     AQCVFlight();
   }
   if(SharedVars::flightMode == LAND) {
-    AQDebugMode();
+    AQDebugMode2();
   }
   sendAQFlightCommand(aqfd);
   SharedVars::flightModeLock.unlock();
@@ -317,6 +330,10 @@ double toRadians(const double &input) {
   return input * M_PI / 180;
 }
 
+double toDegrees(const double &input) {
+	return input * 180 / M_PI;
+}
+
 double constrainRadians(const double &input, const double &min, const double &max) {
   double ret = input;
   while(ret < min) {
@@ -357,6 +374,21 @@ double findGPSDistance(const Vector3d& gpspt_a, const Vector3d& gpspt_b) {
   double tmpa = pow(sin(dlat/2), 2) + cos(lat1)*cos(lat2) * pow(sin(dlong/2), 2);
   double tmpc = 2 * atan2(sqrt(tmpa), sqrt(1-tmpa));
   return EARTH_RADIUS * tmpc;
+}
+
+//distance in meters
+//returns in lat long degrees
+Vector3d findGPSPoint(const Vector3d& gpspt_a, const double& heading, const double& distance) {
+	Vector3d target;
+	const double& lat1 = toRadians(gpspt_a.x);
+	const double& long1 = toRadians(gpspt_a.y);
+	double angularDistance = distance / EARTH_RADIUS;
+	target.x = asin(sin(lat1)*cos(angularDistance) + cos(lat1)*sin(angularDistance)*cos(heading));
+	target.y = long1 + atan2(sin(heading)*sin(angularDistance)*cos(lat1),
+                           cos(angularDistance) - sin(lat1)*sin(target.x));
+	target.x = toDegrees(target.x);
+	target.y = toDegrees(target.y);
+	return target;
 }
 
 void readGPSValues() {

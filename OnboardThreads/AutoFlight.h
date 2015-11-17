@@ -22,7 +22,7 @@
 #define GPS_HEADING_ERROR_MARGIN 0.1 //radians, error margin in radians to be considered "on target"
 
 #define DEFAULT_YAW_VALUE 1500 //integer, PWD amount for no change in yaw
-#define TURN_YAW_OFFSET 10 //integer, PWD amount to change in yaw
+#define TURN_YAW_OFFSET 50 //integer, PWD amount to change in yaw
 
 #define DEFAULT_PITCH_VALUE 1500 //integer, PWD amount to keep craft stable
 #define TURN_PITCH_VALUE 1550 //integer, PWD amount to pitch the craft forward
@@ -48,6 +48,7 @@ double findRelativeHeading(const double &heading, const double &target);
 double constrainRadians(const double &input, const double &min, const double &max);
 double findGPSHeading(const Vector3d& gpspt_a, const Vector3d& gpspt_b);
 double findGPSDistance(const Vector3d& gpspt_a, const Vector3d& gpspt_b);
+Vector3d findGPSPoint(const Vector3d& gpspt_a, const double& heading, const double& distance);
 void autoflight_main();
 
 #endif
