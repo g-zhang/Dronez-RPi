@@ -1,4 +1,4 @@
-<<<<<<< HEAD
+
 //maximum packet size is 100 bytes
 #include <sharedvars.h>
 #include <containers.h>

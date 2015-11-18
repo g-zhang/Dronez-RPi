@@ -1,9 +1,9 @@
 //maximum packet size is 100 bytes
-#include "sharedvars.h"
-#include "containers.h"
+#include "../sharedvars.h"
+#include "../containers.h"
 
 struct Payload { 
-	FlightMode flight_mode; 
+	FlightMode flightMode; 
 	Vector3d gpsPos; //idk
 	double batteryLev; 
 	Vector3d gyro_data; 
@@ -22,12 +22,12 @@ Payload pay;
 	if (packet_type == 1) //command 
 		{ 
 			
-			SharedVars::flightMode.lock(); 
+			SharedVars::flightModeLock.lock(); 
 			pay.flightMode = SharedVars::flightMode; 
-			SharedVars::flightMode.unlock(); 
-			SharedVars::currentGpsPosition.lock(); 
+			SharedVars::flightModeLock.unlock(); 
+			SharedVars::currentGpsPositionLock.lock(); 
 			pay.gpsPos = SharedVars::currentGpsPosition; 
-			SharedVars::currentGpsPosition.unlock();
+			SharedVars::currentGpsPositionLock.unlock();
 
 			send_data(&pay, sizeof(pay), 'c'); 
 			
@@ -37,27 +37,27 @@ Payload pay;
 	else if (packet_type == 2) //status 
 		{ 
 			
-			SharedVars::flightMode.lock(); 
+			SharedVars::flightModeLock.lock(); 
 			pay.flightMode = SharedVars::flightMode; 
-			SharedVars::flightMode.unlock(); 
-			SharedVars::batteryLevel.lock();
+			SharedVars::flightModeLock.unlock(); 
+			SharedVars::batteryLevelLock.lock();
 			pay.batteryLev = SharedVars::batteryLevel;
-			SharedVars::batteryLevel.unlock();
-			SharedVars::gyroData.lock();
+			SharedVars::batteryLevelLock.unlock();
+			SharedVars::gyroDataLock.lock();
 			pay.gyro_data = SharedVars::gyroData; 
-			SharedVars::gyroData.unlock();
-			SharedVars::accelData.lock();
-			pay.accel_data = SharedVars::accelData; 
-			SharedVars::accelData.unlock();
-			SharedVars::magData.lock();
+			SharedVars::gyroDataLock.unlock();
+			SharedVars::accDataLock.lock();
+			pay.accel_data = SharedVars::accData; 
+			SharedVars::accDataLock.unlock();
+			SharedVars::magDataLock.lock();
 			pay.mag_data = SharedVars::magData;
-			SharedVars::magData.unlock();
-			SharedVars::currentGpsPosition.lock();
+			SharedVars::magDataLock.unlock();
+			SharedVars::currentGpsPositionLock.lock();
 			pay.gpsPos = SharedVars::currentGpsPosition; 
-			SharedVars::currentGpsPosition.unlock();
-			SharedVars::ultrasonicreading.lock();
+			SharedVars::currentGpsPositionLock.unlock();
+			SharedVars::ultrasonicreadingLock.lock();
 			pay.ultra_data = SharedVars::ultrasonicReading; 
-			SharedVars::ultrasonicreading.unlock();
+			SharedVars::ultrasonicreadingLock.unlock();
 			
 			send_data(&pay, sizeof(pay), 's'); 
 

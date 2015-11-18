@@ -1,10 +1,9 @@
 //maximum packet size is 100 bytes
-#include "sharedvars.h"
-#include "containers.h"
+#include "../sharedvars.h"
+#include "../containers.h"
 
 struct SensorData { 
-
-	Vector3D gpsPos; 
+	Vector3d gpsPos; 
 	Vector3d accel_data; 
 	Vector3d gyro_data; 
 	Vector3d mag_data; 
@@ -22,29 +21,26 @@ struct StatusPayload {
 
 void buildStatus_payload(char* data, int size){ 
 
-Payload pay; 
+StatusPayload pay; 
 			
-	SharedVars::flightMode.lock(); 
+	SharedVars::flightModeLock.lock(); 
 	pay.flight_mode = SharedVars::flightMode; 
-	SharedVars::flightMode.unlock(); 
-	SharedVars::batteryLevel.lock();
+	SharedVars::flightModeLock.unlock(); 
+	SharedVars::batteryLevelLock.lock();
 	pay.sensor.batteryLev = SharedVars::batteryLevel;
-	SharedVars::batteryLevel.unlock();
-	SharedVars::gyroData.lock();
+	SharedVars::batteryLevelLock.unlock();
+	SharedVars::gyroDataLock.lock();
 	pay.sensor.gyro_data = SharedVars::gyroData; 
-	SharedVars::gyroData.unlock();
-	SharedVars::accelData.lock();
-	pay.sensor.accel_data = SharedVars::accelData; 
-	SharedVars::accelData.unlock();
-	SharedVars::magData.lock();
+	SharedVars::gyroDataLock.unlock();
+	SharedVars::accDataLock.lock();
+	pay.sensor.accel_data = SharedVars::accData; 
+	SharedVars::accDataLock.unlock();
+	SharedVars::magDataLock.lock();
 	pay.sensor.mag_data = SharedVars::magData;
-	SharedVars::magData.unlock();
-	SharedVars::currentGpsPosition.lock();
+	SharedVars::magDataLock.unlock();
+	SharedVars::currentGpsPositionLock.lock();
 	pay.sensor.gpsPos = SharedVars::currentGpsPosition; 
-	SharedVars::currentGpsPosition.unlock();
-	SharedVars::ultrasonicreading.lock();
-	pay.sensor.ultra_data = SharedVars::ultrasonicReading; 
-	SharedVars::ultrasonicreading.unlock();
+	SharedVars::currentGpsPositionLock.unlock();
 	
 			//send_data(&pay, sizeof(pay), 's'); 
 //return pay; 
