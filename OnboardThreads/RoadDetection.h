@@ -1,13 +1,7 @@
 #ifndef RoadDetection_h
 #define RoadDetection_h
 
-#include "opencv2/highgui/highgui.hpp"
-#include "opencv2/imgproc/imgproc.hpp"
-#include "math.h"
-#include "../containers.h"
-#include "../sharedvars.h"
-#include <cstdlib>
-#include "raspicam/raspicam_cv.h"
+#include "Camera.h"
 
 #include <iostream>
 #include <string>

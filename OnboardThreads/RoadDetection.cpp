@@ -147,39 +147,9 @@ RouteInfo findLineEquation(Vec4i avgLine, double pixelToMeters){
 }
 
 
-Mat takePic(raspicam::RaspiCam_Cv Camera) {
-	cv::Mat image;
-	cout<<"Capturing"<<endl;
-	double time_=cv::getTickCount();
-	for(int i = 0; i < 31; ++i){
-		Camera.grab();
-		Camera.retrieve ( image );
-		if(i ==30)
-			cv::imwrite ("image"+std::to_string(1)+".jpg",image );
-	}
-
-	Camera.release();
-	return image;
-}
-
-void roadDetection_main(){
-	
-	raspicam::RaspiCam_Cv Camera;
-
-	Camera.set ( CV_CAP_PROP_FRAME_WIDTH,1920  );
-	Camera.set ( CV_CAP_PROP_FRAME_HEIGHT, 1080 );
-	Camera.set ( CV_CAP_PROP_BRIGHTNESS,50  );
-	Camera.set ( CV_CAP_PROP_CONTRAST ,50  );
-	Camera.set ( CV_CAP_PROP_SATURATION, 50  );
-	Camera.set ( CV_CAP_PROP_GAIN, 50  );
-	cout<<"Connecting to camera"<<endl;
-	if ( !Camera.open() ) {
-		cerr<<"Error opening camera"<<endl;
-		return;
-	}
-	cout<<"Connected to camera ="<<Camera.getId() <<endl;
+void roadDetection_main(){	
 	while(true){
-		Mat src = takePic(Camera);
+		Mat src = takePic();
 		vector<Vec4i> lines = findLines(src);
 		if(lines.size() == 0){
 			namedWindow("pic",CV_WINDOW_NORMAL);
