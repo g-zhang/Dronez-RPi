@@ -1,17 +1,18 @@
 #ifndef RoadDetection_h
 #define RoadDetection_h
 
-#include "opencv2/highgui/highgui.hpp"
-#include "opencv2/imgproc/imgproc.hpp"
-#include "math.h"
-#include "../containers.h"
-#include "../sharedvars.h"
+#include "Camera.h"
 
 #include <iostream>
 #include <string>
 
 
 using namespace std;
+
+struct RouteInfo{
+	double distance;
+	double heading;
+};
 
 vector<cv::Vec4i> findLines(cv::Mat src);
 
@@ -21,6 +22,10 @@ double findRotationAmount(cv::Vec4i avgLine);
 
 double findHorizontalShiftAmount(double height, cv::Vec4i line, double imageWidth);
 
-void roadDetection_main();
+cv::Mat takePic(raspicam::RaspiCam_Cv Camera);
+
+RouteInfo findRouteInfo(cv::Vec4i avgLine, double pixelToMeters); 
+
+RouteInfo getNextRoadPoint();
 
 #endif

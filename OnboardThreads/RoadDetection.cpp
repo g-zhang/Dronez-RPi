@@ -9,7 +9,7 @@ using namespace cv;
 //editing the parameters passed to HoughLinesP.
 //For a description of each of the parameters see:
 //http://docs.opencv.org/doc/tutorials/imgproc/imgtrans/hough_lines/hough_lines.html
-vector<Vec4i> findLines(Mat src)
+vector<Vec4i> findLines(Mat &src)
 {
 
 	vector<Vec4i> lines;
@@ -23,8 +23,7 @@ vector<Vec4i> findLines(Mat src)
 	Canny(src, dst, 50, 200, 3);
 	cvtColor(dst, cdst, CV_GRAY2BGR);
 	GaussianBlur( dst, smoothedImage, Size( 31, 31 ), 0, 0 );
-
-	HoughLinesP(dst, lines, 1, CV_PI/180, 50, 90, 5 );
+	HoughLinesP(dst, lines, 4, CV_PI/180, 100, 50, 10 );
 	for( size_t i = 0; i < lines.size(); i++ )
 	{
 	 	Vec4i l = lines[i];
@@ -41,8 +40,9 @@ vector<Vec4i> findLines(Mat src)
 
 //This function will look at all lines that have been detected and find the
 //average line of all of them. Returned as a Vec4i.
-Vec4i findAverageLine(vector<Vec4i> lines)
+Vec4i findAverageLine(vector<Vec4i> &lines)
 {
+	
 	int startX = 0;
 	int startY = 0;
 	int endX = 0;
@@ -88,6 +88,11 @@ double findRotationAmount(Vec4i avgLine)
 	return rotateAmount;
 }
 
+double CalculatePixelToMeters(double height, double imageWidth){
+	double pictureWidth = height * tan(53.5);
+	return pictureWidth / imageWidth;
+}
+
 double findHorizontalShiftAmount( double height, Vec4i line, double imageWidth){
 	//Our Camera has a viewing angle of 53.5 degrees
 	//This calculate the width of the picture in meters
@@ -101,15 +106,60 @@ double findHorizontalShiftAmount( double height, Vec4i line, double imageWidth){
 
 }
 
-void roadDetection_main(){
-	string file = "OnboardThreads/TestImages/12.jpg";	
-	const char* filename = file.c_str();
- 	Mat src = imread(filename, 0);
+RouteInfo findRouteInfo(Vec4i avgLine, double pixelToMeters){
+	double slope = 0;
+	double stepDistance = 5;
 
+	slope = (avgLine[0] - avgLine[2]) / (avgLine[1] - avgLine[3]);
+	double oldX = (avgLine[0] + avgLine[2]) / 2;
+	double oldY = (avgLine[1] + avgLine[3]) / 2;
+	
+	double intercept = (avgLine[1] - (avgLine[0] * slope));
+
+	double r = sqrt(1 + (slope * slope));
+	
+	double rot = findRotationAmount(avgLine);
+	bool negativeSlope = false;
+	if(rot < 0){
+		negativeSlope = true;
+		rot += 90;
+	}
+	double xMovement = stepDistance * cos(rot);
+	double yMovement = stepDistance * sin(rot);
+
+	double newX = 0;
+	if(negativeSlope)
+		newX = oldX - xMovement;
+	else
+		newX = oldX + xMovement;
+
+	newY = oldY + yMovement;
+	
+	double distance = sqrt((newX * newX) + (newY * newY)) * pixelToMeters;
+
+	double heading = atan2(newY, newX) * 180 / M_PI;
+
+	RouteInfo routeInfo;
+	routeInfo.distance = distance;
+	routeInfo.heading = heading;
+
+	return routeInfo;
+}
+
+
+RouteInfo getNextRoadPoint(){	
+	Mat src = takePic();
 	vector<Vec4i> lines = findLines(src);
-
-	if(lines.size() == 0)
+	/* Debugging stuff that I don't quite want to take out yet
+	if(lines.size() == 0){
+		namedWindow("pic",CV_WINDOW_NORMAL);
+		imshow("pic", src);
+		resizeWindow("pic",800,400);
+		waitKey();
 		cout << "No lines found" << endl;
+		continue;
+	}
+	*/
 	
 	int centerX = src.rows / 2;
 	int centerY = src.cols / 2;
@@ -128,15 +178,23 @@ void roadDetection_main(){
 	SharedVars::ultrasonicReadingLock.unlock();	
 	double horizontalShift = findHorizontalShiftAmount(droneHeight, newLine, src.rows);	
 
+	double pixelToMeters = calculatePixelsToMeter(height, src.rows);
+
+	RouteInfo routeInfo = findRouteInfo(avgLine, pixelToMeters);
+
 	cout << rotateAmount << endl;
 	cout << horizontalShift << endl;
 
-
+	/*More Debugging Stuff I don't quite want to take out yet
 	line( src, Point(avgLine[0], avgLine[1]), Point(avgLine[2], avgLine[3]), Scalar(0,0,255), 3, CV_AA);
 	namedWindow("avgLine",CV_WINDOW_NORMAL);
 	imshow("avgLine", src);
+	imwrite("avgLine.jpg", src);
 	resizeWindow("avgLine",800,400);
 	waitKey();
+	*/
+
+	return routeInfo;
 }
 
 

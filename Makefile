@@ -16,6 +16,9 @@ ROADDETECTIONCPP = OnboardThreads/RoadDetection.cpp
 # List of .cpp files
 CPPFILES = sharedvars.cpp OnboardThreads/*.cpp OnboardThreads/*.c
 CPPFILES_NOCV = sharedvars.cpp $(filter-out $(ROADDETECTIONCPP), $(wildcard OnboardThreads/*.c*))
+OPENCV_LIBS = -lopencv_core -lopencv_imgproc -lopencv_highgui
+RASPICAM_LIBS = -lraspicam -lraspicam_cv 
+
 
 
 # COMPILER FLAGS
@@ -29,7 +32,7 @@ nocv:
 	g++ $(CFLAGS) $(MAINCPP) $(CPPFILES_NOCV) -o $(RPIBIN) -lpthread
 
 test:
-	g++ $(CFLAGS) $(TESTCPP) $(CPPFILES) $(OPENCV_LIBS) -o $(BINFILE) -lpthread
+	g++ $(CFLAGS) $(TESTCPP) $(CPPFILES) $(OPENCV_LIBS) $(RASPICAM_LIBS) -o $(BINFILE) -lpthread
 
 testnocv:
 	g++ $(CFLAGS) $(TESTCPP) $(CPPFILES_NOCV) -o $(BINFILE) -lpthread

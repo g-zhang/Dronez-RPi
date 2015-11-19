@@ -32,16 +32,16 @@ public:
 		code = code_in;
 		size = size_in;
 		send[0] = 133;
-    	send[1] = 133;
-    	send[2] = 133;
-    	send[3] = code;
-    	send[4] = size >> 8;
-    	send[5] = size & 255;
-    	memcpy(&send[6], c, size);
+    		send[1] = 133;
+    		send[2] = 133;
+    		send[3] = code;
+    		send[4] = size >> 8;
+    		send[5] = size & 255;
+    		memcpy(&send[6], c, size);
  		size += 9;
  		send[size-3] = 169;
-    	send[size-2] = 22;
-    	send[size-1] = 243;
+    		send[size-2] = 22;
+    		send[size-1] = 243;
 	}
 	void send_data(){
 		write(xbee_comm,send,size);

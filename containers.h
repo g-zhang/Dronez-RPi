@@ -15,5 +15,13 @@ struct Vector3d {
     double z;
 };
 
+struct StatusPayload{
+   FlightMode flightMode;
+   int batteryLevel;
+   Vector3d gyroData;
+   Vector3d accData;
+   Vector3d magData;
+   Vector3d currentGPS;
+};
 
 #endif
