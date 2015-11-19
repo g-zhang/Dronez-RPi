@@ -8,11 +8,13 @@
 #include <unistd.h>			//Used for UART
 #include <fcntl.h>			//Used for UART
 #include <termios.h>		//Used for UART
+#include <queue>
 #include <sys/select.h>
 
 #include "AutoFlight.h"
 #include "Utility.h"
 #include "gps.h"
+//#include "RoadDetection.h"
 #include "../containers.h"
 #include "../sharedvars.h"
 using namespace std;
@@ -22,6 +24,11 @@ char AQ32RecvBuffer[AQ_READBUF_SIZE]; //pre declared buffer for readAQ32Sensors
 char AQ32SendBuffer[AQ_SENDBUF_SIZE];
 int AQ32SendBufferLen = 0;
 mutex AQFDLock;
+
+//cv mode globals
+int cvModeHoldCount = 0;
+queue<Vector3d> cvFlightPlan;
+mutex cvFlightPlanLock;
 
 int openAQ32Connection() {
   //setup connection
@@ -182,10 +189,6 @@ void sendAQFlightCommand(int aqfd) {
     AQFDLock.unlock();
 }
 
-void AQCVFlight() {
-  //cv mode
-}
-
 void AQDebugMode() {
   //turn back and forth every ~3 sec
   static long counter = 0;
@@ -214,12 +217,8 @@ void AQDebugMode2() {
 void AQGPSFlight() {
   //gps mode
   SharedVars::gpsFlightPlanLock.lock();
-  SharedVars::currentGpsPositionLock.lock();
   SharedVars::headingDataLock.lock();
   SharedVars::barometerReadingLock.lock();
-  SharedVars::currentGpsSpeedLock.lock();
-
-  readGPSValues();
 
   if(SharedVars::gpsFlightPlan.empty()) { //queue is empty, don't do anything
     dprint("GPS flight plan queue is empty!");
@@ -238,7 +237,7 @@ void AQGPSFlight() {
     SharedVars::printLock.unlock();
 
     if(distancetoTarget <= GPS_DIST) { //see if we have arrived within 3 meters of our target
-      dprint("Arrived at a GPS point");
+      dprint("GPS MODE: Arrived at a GPS point");
       //remove the the waypoint from the queue
       SharedVars::gpsFlightPlan.pop();
       //reset all flight vals and have the drone keep over point until next loop
@@ -268,16 +267,86 @@ void AQGPSFlight() {
     }
   }
 
-  SharedVars::currentGpsSpeedLock.unlock();
   SharedVars::barometerReadingLock.unlock();
   SharedVars::headingDataLock.unlock();
-  SharedVars::currentGpsPositionLock.unlock();
   SharedVars::gpsFlightPlanLock.unlock();
+}
+
+void AQCVFlight() {
+  //cv mode
+  cvFlightPlanLock.lock();
+  SharedVars::headingDataLock.lock();
+  SharedVars::barometerReadingLock.lock();
+
+  if(cvFlightPlan.empty()) { //queue is empty, read to take picture
+    dprint("CV Mode Taking Picture");
+    //reset hold count
+    cvModeHoldCount = 0;
+    //call distance and heading
+    //push onto queue
+    createAQFlightCommand(MANUAL_MODE, DEFAULT_PITCH_VALUE, DEFAULT_YAW_VALUE, 0);
+
+  } else { //otherwise perform auto gps flight
+
+    double distancetoTarget = findGPSDistance(SharedVars::currentGpsPosition, cvFlightPlan.front());
+    double headingtoTarget = findGPSHeading(SharedVars::currentGpsPosition, cvFlightPlan.front());
+    double angleDeltaToTarget = findRelativeHeading(SharedVars::heading, headingtoTarget);
+    SharedVars::printLock.lock();
+    cout << "current lat/long: " << SharedVars::currentGpsPosition.x << " " << SharedVars::currentGpsPosition.y << endl;
+    cout << "distancetoTarget: " << distancetoTarget << endl;
+    cout << "headingtoTarget: " << headingtoTarget << endl;
+    cout << "angleDeltaToTarget: " << angleDeltaToTarget << endl;
+    SharedVars::printLock.unlock();
+
+    if(distancetoTarget <= GPS_DIST) {
+      dprint("CV MODE: Arrived at a GPS point, Holding position");
+      cvModeHoldCount += 1;
+    }
+
+    if(cvModeHoldCount >= CV_HOLD_TIME) { //see if we have arrived within 3 meters of our target
+      dprint("CV MODE: Removing waypoint");
+      //remove the the waypoint from the queue
+      cvFlightPlan.pop();
+      //reset all flight vals and have the drone keep over point until next loop
+      createAQFlightCommand(MANUAL_MODE, DEFAULT_PITCH_VALUE, DEFAULT_YAW_VALUE, 0);
+
+    } else { //otherwise send flight values
+      //correct heading
+      if(abs(angleDeltaToTarget) > GPS_HEADING_ERROR_MARGIN) {
+        dprint("Correcting Heading");
+        //if our heading is not correct, turn by DEFAULT_YAW_VALUE radians
+        int commandyaw = DEFAULT_YAW_VALUE;
+        if(angleDeltaToTarget < 0) {
+          commandyaw -= TURN_YAW_OFFSET;
+        } else if(angleDeltaToTarget > 0) {
+          commandyaw += TURN_YAW_OFFSET;
+        }
+        createAQFlightCommand(AUTO_MODE, DEFAULT_PITCH_VALUE, commandyaw, 0);
+
+      //corect speed/pitch
+      } else {
+        dprint("Correcting Pitch");
+        //calculate estimated position until next loop
+        //double estimatedDistance = (AQ_TRANSFER_RATE / MICROSECOND) * SharedVars::currentGpsSpeed;
+        //adjust pitch angle to move craft forwarding
+        createAQFlightCommand(AUTO_MODE, TURN_PITCH_VALUE, DEFAULT_YAW_VALUE, 0);
+      }
+    }
+  }
+
+  SharedVars::barometerReadingLock.unlock();
+  SharedVars::headingDataLock.unlock();
+  cvFlightPlanLock.unlock();
 }
 
 void AQFlightLogic(int aqfd) {
   SharedVars::flightModeLock.lock();
   SharedVars::flightMode = GPS;
+
+  SharedVars::currentGpsPositionLock.lock();
+  SharedVars::currentGpsSpeedLock.lock();
+  readGPSValues();
+
   if(SharedVars::flightMode == GPS) {
     AQGPSFlight();
   }
@@ -288,6 +357,9 @@ void AQFlightLogic(int aqfd) {
     AQDebugMode2();
   }
   sendAQFlightCommand(aqfd);
+
+  SharedVars::currentGpsSpeedLock.unlock();
+  SharedVars::currentGpsPositionLock.unlock();
   SharedVars::flightModeLock.unlock();
 }
 

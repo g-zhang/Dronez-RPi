@@ -27,6 +27,8 @@
 #define DEFAULT_PITCH_VALUE 1500 //integer, PWD amount to keep craft stable
 #define TURN_PITCH_VALUE 1550 //integer, PWD amount to pitch the craft forward
 
+#define CV_HOLD_TIME 3 //#of loops to hold at gps point before taking picture and calculating next route
+
 /*** ENUM AND TYPES ***/
 
 enum AQDataValuesIndex {
