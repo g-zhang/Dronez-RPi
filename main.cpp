@@ -67,6 +67,7 @@ int main(int argc, char* argv[]){
     std::thread AutoFlightThread(autoflight_main);
     //std::thread XbeeInterfaceThread(xbee_main);
     //thread Xbee_read_in(read_in);
+
     //wait for threads to exit
     //XbeeInterfaceThread.join();
     AutoFlightThread.join();

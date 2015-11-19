@@ -9,11 +9,13 @@
 #include <mutex>
 #include <string>
 #include <iostream>
+#include <condition_variable>
 
 
 namespace SharedVars {
   extern std::deque<Queue_send> infosend;
   extern std::mutex infosendLock;
+  extern std::condition_variable infosendCv;
 
   extern double batteryLevel;
   extern std::mutex batteryLevelLock;

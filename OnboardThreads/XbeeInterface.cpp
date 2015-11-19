@@ -31,7 +31,7 @@ void read_in(){
     int size = 0;
     int which_mes = 0;
     int i_data = 0;
-    char type;
+    char type = '1';
     char data[5000];
     while(1){
         if (read(xbee_comm,buffer,1)>0){
@@ -155,13 +155,17 @@ void send_pic(const char *name){
     lseek(fd,0,SEEK_SET);
     char pic_info[length];
     read(fd, pic_info, length);
-    send_data(pic_info, length,'p', xbee_pic);
+    send_data(pic_info, length,'p', xbee_comm);
 }
 
 void parse(char *data, int size, char type){
     if(type == 'g'){
         gps_parse(data, size);
     }
+    else if(type == 'f'){
+        flight_mode(data,size);
+    }
+
 }
 
 int set_serial(int which){
@@ -198,7 +202,7 @@ int set_serial(int which){
     	   cout<<"Xbee opened on "<<MODEM<<'\n';
         }
     }
-    else if(which == 1){
+    else{
         if((tty_fd = open(MODEM_PIC , O_RDWR | O_NONBLOCK)) == -1){
             printf("Error while opening\n"); // Just if you want user interface error control
             return -1;

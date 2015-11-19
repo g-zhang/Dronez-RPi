@@ -6,7 +6,8 @@ using namespace std;
 namespace SharedVars {
   std::deque<Queue_send> infosend;
   std::mutex infosendLock;
-
+  std::condition_variable infosendCv;
+  
   std::mutex printLock;
 
   double batteryLevel;
@@ -62,5 +63,4 @@ namespace SharedVars {
 
 void SharedVars::init() {
   std::cout << "Initializing shared vars" << endl;
-
 }
