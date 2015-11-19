@@ -15,13 +15,18 @@ using namespace std;
 
 void xbee_main() {
     cout << "xbee thread started" << endl;
-    while(1){
+    unique_lock<mutex> infosendULock(SharedVars::infosendLock);
+    infosendULock.lock();	
+    while(true){
+	while(!SharedVars::infosend.empty()){
+		SharedVars::infosendCv.wait(infosendULock);
+	}
         if(SharedVars::infosend.size()){
             SharedVars::infosend.front().send_data();
             SharedVars::infosend.pop_front();
         }
-        usleep(100);
     }
+    infosendULock.unlock();
 }
 
 void read_in(){
