@@ -1,6 +1,7 @@
 #include "Camera.h"
 
 using namespace std;
+using namespace cv;
 
 void initCamera(){
 	SharedVars::Camera;
@@ -16,7 +17,7 @@ void initCamera(){
                 cerr<<"Error opening camera"<<endl;
                 return;
         }
-        cout<<"Connected to camera ="<<Camera.getId() <<endl;
+        cout<<"Connected to camera ="<<SharedVars::Camera.getId() <<endl;
 
 
 
@@ -25,7 +26,6 @@ void initCamera(){
 Mat takePic() {
         cv::Mat image;
         cout<<"Capturing"<<endl;
-        double time_=cv::getTickCount();
         for(int i = 0; i < 31; ++i){
                 SharedVars::Camera.grab();
                 SharedVars::Camera.retrieve ( image );
@@ -37,10 +37,10 @@ Mat takePic() {
         return image;
 }
 
-unsigned char * matToBytes(Mat image)
+char * matToBytes(Mat image)
 {
    int size = image.total() * image.elemSize();
-   unsigned char bytes[size];  // you will have to delete[] that later
-   std::memcpy(bytes,image.data,size * sizeof(byte));
+   char bytes[size];  // you will have to delete[] that later
+   std::memcpy(bytes,image.data,size * sizeof(char));
    return bytes;
 }

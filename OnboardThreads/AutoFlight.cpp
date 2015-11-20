@@ -14,7 +14,7 @@
 #include "AutoFlight.h"
 #include "Utility.h"
 #include "gps.h"
-//#include "RoadDetection.h"
+#include "RoadDetection.h"
 #include "../containers.h"
 #include "../sharedvars.h"
 using namespace std;
@@ -283,7 +283,9 @@ void AQCVFlight() {
     //reset hold count
     cvModeHoldCount = 0;
     //call distance and heading
-    //push onto queue
+    RouteInfo route = getNextRoadPoint();
+    route.heading = constrainRadians(route.heading + SharedVars::heading, -M_PI, M_PI);
+    cvFlightPlan.push(findGPSPoint(SharedVars::currentGpsPosition, route.heading, route.distance));
     createAQFlightCommand(MANUAL_MODE, DEFAULT_PITCH_VALUE, DEFAULT_YAW_VALUE, 0);
 
   } else { //otherwise perform auto gps flight
@@ -341,7 +343,7 @@ void AQCVFlight() {
 
 void AQFlightLogic(int aqfd) {
   SharedVars::flightModeLock.lock();
-  SharedVars::flightMode = GPS;
+  SharedVars::flightMode = CVMODE;
 
   SharedVars::currentGpsPositionLock.lock();
   SharedVars::currentGpsSpeedLock.lock();

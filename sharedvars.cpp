@@ -1,9 +1,11 @@
 #include "sharedvars.h"
-
+#include "OnboardThreads/Camera.h"
 #include <iostream>
 using namespace std;
 
 namespace SharedVars {
+  raspicam::RaspiCam_Cv Camera;
+
   std::deque<Queue_send> infosend;
   std::mutex infosendLock;
   std::condition_variable infosendCv;
@@ -63,4 +65,5 @@ namespace SharedVars {
 
 void SharedVars::init() {
   std::cout << "Initializing shared vars" << endl;
+  initCamera();
 }

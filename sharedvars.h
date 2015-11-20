@@ -10,9 +10,11 @@
 #include <string>
 #include <iostream>
 #include <condition_variable>
-
+#include "raspicam/raspicam_cv.h"
 
 namespace SharedVars {
+  extern raspicam::RaspiCam_Cv Camera;
+
   extern std::deque<Queue_send> infosend;
   extern std::mutex infosendLock;
   extern std::condition_variable infosendCv;

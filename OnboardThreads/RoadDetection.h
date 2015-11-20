@@ -14,15 +14,15 @@ struct RouteInfo{
 	double heading;
 };
 
-vector<cv::Vec4i> findLines(cv::Mat src);
+vector<cv::Vec4i> findLines(cv::Mat &src);
 
-cv::Vec4i findAverageLine(vector<cv::Vec4i> lines);
+cv::Vec4i findAverageLine(vector<cv::Vec4i> &lines);
 
 double findRotationAmount(cv::Vec4i avgLine);
 
-double findHorizontalShiftAmount(double height, cv::Vec4i line, double imageWidth);
+double CalculatePixelsToMeters(double height, double imageWidth);
 
-cv::Mat takePic(raspicam::RaspiCam_Cv Camera);
+double findHorizontalShiftAmount(double height, cv::Vec4i line, double imageWidth);
 
 RouteInfo findRouteInfo(cv::Vec4i avgLine, double pixelToMeters); 
 

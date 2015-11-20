@@ -11,8 +11,8 @@
 
 void initCamera();
 
-cv::Mat takePic(raspicam::RaspiCam_Cv Camera);
+cv::Mat takePic();
 
 
-unsigned char * matToBytes(Mat image);
+char * matToBytes(cv::Mat image);
 #endif

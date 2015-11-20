@@ -88,7 +88,7 @@ double findRotationAmount(Vec4i avgLine)
 	return rotateAmount;
 }
 
-double CalculatePixelToMeters(double height, double imageWidth){
+double CalculatePixelsToMeters(double height, double imageWidth){
 	double pictureWidth = height * tan(53.5);
 	return pictureWidth / imageWidth;
 }
@@ -128,6 +128,7 @@ RouteInfo findRouteInfo(Vec4i avgLine, double pixelToMeters){
 	double yMovement = stepDistance * sin(rot);
 
 	double newX = 0;
+	double newY = 0;
 	if(negativeSlope)
 		newX = oldX - xMovement;
 	else
@@ -178,7 +179,7 @@ RouteInfo getNextRoadPoint(){
 	SharedVars::ultrasonicReadingLock.unlock();	
 	double horizontalShift = findHorizontalShiftAmount(droneHeight, newLine, src.rows);	
 
-	double pixelToMeters = calculatePixelsToMeter(height, src.rows);
+	double pixelToMeters = CalculatePixelsToMeters(droneHeight, src.rows);
 
 	RouteInfo routeInfo = findRouteInfo(avgLine, pixelToMeters);
 

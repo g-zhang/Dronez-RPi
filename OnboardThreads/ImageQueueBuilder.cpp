@@ -1,10 +1,10 @@
 #include "RoadDetection.h"
 
 using namespace std;
-using namespace cv;
+
 void imageQueueBuilder_main(){
 	while(true){	
-		Mat currentPic = takePic();
+		cv::Mat currentPic = takePic();
 
 		//process Image
 
