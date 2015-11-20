@@ -27,8 +27,6 @@ vector<Vec4i> findLines(Mat &src)
 	for( size_t i = 0; i < lines.size(); i++ )
 	{
 	 	Vec4i l = lines[i];
-		cout << "Start" << "(" << l[0] << "," << l[1] << ")" << endl;	
-		cout << "End" << "(" << l[2] << "," << l[3] << ")" << endl;
 		line( smoothedImage, Point(l[0], l[1]), Point(l[2], l[3]), Scalar(0,0,255), 3, CV_AA);
 	}
 	//imshow("source", src);
@@ -89,7 +87,7 @@ double findRotationAmount(Vec4i avgLine)
 }
 
 double CalculatePixelsToMeters(double height, double imageWidth){
-	double pictureWidth = height * tan(53.5);
+	double pictureWidth = height * tan(53.5) * 2;
 	return pictureWidth / imageWidth;
 }
 
@@ -110,7 +108,9 @@ RouteInfo findRouteInfo(Vec4i avgLine, double pixelToMeters){
 	double stepDistance = 5;
 
 	double oldX = (avgLine[0] + avgLine[2]) / 2;
-	double oldY = (avgLine[1] + avgLine[3]) / 2;	
+	double oldY = (avgLine[1] + avgLine[3]) / 2;
+	//oldX *= pixelToMeters;
+	//oldY *= pixelToMeters;	
 	double rot = findRotationAmount(avgLine);
 	bool negativeSlope = false;
 	if(rot < 0){
@@ -119,22 +119,21 @@ RouteInfo findRouteInfo(Vec4i avgLine, double pixelToMeters){
 	}
 	double xMovement = stepDistance * cos(rot);
 	double yMovement = stepDistance * sin(rot);
-
 	double newX = 0;
 	double newY = 0;
-	if(negativeSlope)
+	if(negativeSlope)	
 		newX = oldX - xMovement;
 	else
 		newX = oldX + xMovement;
 
 	newY = oldY + yMovement;
 	
-	double distance = sqrt((newX * newX) + (newY * newY)) * pixelToMeters;
+	//double distance = sqrt((newX * newX) + (newY * newY)) * pixelToMeters;
 
-	double heading = atan2(newY, newX) * 180 / M_PI;
+	double heading = atan2(newX, newY) * 180 / M_PI;
 
 	RouteInfo routeInfo;
-	routeInfo.distance = distance;
+	routeInfo.distance = stepDistance;
 	routeInfo.heading = heading;
 
 	return routeInfo;
@@ -154,6 +153,14 @@ RouteInfo getNextRoadPoint(){
 		continue;
 	}
 	*/
+	if(lines.size() == 0){
+		cout << "No lines found" << endl;
+		RouteInfo toReturn;
+		toReturn.distance = 0;
+		toReturn.heading = 0;
+		return toReturn;
+	}
+
 	
 	int centerX = src.rows / 2;
 	int centerY = src.cols / 2;
@@ -165,28 +172,21 @@ RouteInfo getNextRoadPoint(){
 	Vec4i newLine( avgLine[0]-centerX, centerY-avgLine[1], avgLine[2]-centerX,
 			centerY-avgLine[3] );
 	
-	double rotateAmount = findRotationAmount(newLine);
-	
 	SharedVars::ultrasonicReadingLock.lock();
-	double droneHeight = SharedVars::ultrasonicReading;
+	double droneHeight = 2;//Temp need to change this to height base on barometer
 	SharedVars::ultrasonicReadingLock.unlock();	
-	double horizontalShift = findHorizontalShiftAmount(droneHeight, newLine, src.rows);	
 
 	double pixelToMeters = CalculatePixelsToMeters(droneHeight, src.rows);
 
-	RouteInfo routeInfo = findRouteInfo(avgLine, pixelToMeters);
+	RouteInfo routeInfo = findRouteInfo(newLine, pixelToMeters);
 
-	cout << rotateAmount << endl;
-	cout << horizontalShift << endl;
-
-	/*More Debugging Stuff I don't quite want to take out yet
 	line( src, Point(avgLine[0], avgLine[1]), Point(avgLine[2], avgLine[3]), Scalar(0,0,255), 3, CV_AA);
 	namedWindow("avgLine",CV_WINDOW_NORMAL);
 	imshow("avgLine", src);
 	imwrite("avgLine.jpg", src);
 	resizeWindow("avgLine",800,400);
 	waitKey();
-	*/
+	
 
 	return routeInfo;
 }
