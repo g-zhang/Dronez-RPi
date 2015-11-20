@@ -107,17 +107,10 @@ double findHorizontalShiftAmount( double height, Vec4i line, double imageWidth){
 }
 
 RouteInfo findRouteInfo(Vec4i avgLine, double pixelToMeters){
-	double slope = 0;
 	double stepDistance = 5;
 
-	slope = (avgLine[0] - avgLine[2]) / (avgLine[1] - avgLine[3]);
 	double oldX = (avgLine[0] + avgLine[2]) / 2;
-	double oldY = (avgLine[1] + avgLine[3]) / 2;
-	
-	double intercept = (avgLine[1] - (avgLine[0] * slope));
-
-	double r = sqrt(1 + (slope * slope));
-	
+	double oldY = (avgLine[1] + avgLine[3]) / 2;	
 	double rot = findRotationAmount(avgLine);
 	bool negativeSlope = false;
 	if(rot < 0){

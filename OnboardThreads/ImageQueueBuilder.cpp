@@ -8,10 +8,7 @@ void imageQueueBuilder_main(){
 
 		//process Image
 
-
-
 		//send Image
-		char * imageByte = matToBytes(currentPic);
 		unsigned int size = currentPic.total() * currentPic.elemSize();
 		Queue_send toSend(matToBytes(currentPic), size, 'p') ;
 		SharedVars::infosendLock.lock();
