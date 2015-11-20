@@ -284,7 +284,17 @@ void AQCVFlight() {
     cvModeHoldCount = 0;
     //call distance and heading
     RouteInfo route = getNextRoadPoint();
+
+    SharedVars::printLock.lock();
+    cout << "AFlight:Roadline Info >> Distance = " << route.distance << ", RelHeading = " << route.heading << endl;
+    SharedVars::printLock.unlock();
+
     route.heading = constrainRadians(route.heading + SharedVars::heading, -M_PI, M_PI);
+
+    SharedVars::printLock.lock();
+    cout << "AFlight:Roadline Info >> True Heading = " <<  route.heading << endl;
+    SharedVars::printLock.unlock();
+
     cvFlightPlan.push(findGPSPoint(SharedVars::currentGpsPosition, route.heading, route.distance));
     createAQFlightCommand(MANUAL_MODE, DEFAULT_PITCH_VALUE, DEFAULT_YAW_VALUE, 0);
 
@@ -300,7 +310,7 @@ void AQCVFlight() {
     cout << "angleDeltaToTarget: " << angleDeltaToTarget << endl;
     SharedVars::printLock.unlock();
 
-    if(distancetoTarget <= GPS_DIST) {
+    if(distancetoTarget <= CV_GPS_DIST) {
       dprint("CV MODE: Arrived at a GPS point, Holding position");
       cvModeHoldCount += 1;
     }
