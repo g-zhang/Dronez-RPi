@@ -355,7 +355,7 @@ void AQFlightLogic(int aqfd) {
   SharedVars::flightModeLock.lock();
   SharedVars::currentGpsPositionLock.lock();
   SharedVars::currentGpsSpeedLock.lock();
-  //readGPSValues();
+  readGPSValues();
 
   if(SharedVars::flightMode == GPS) {
     AQGPSFlight();
