@@ -1,5 +1,6 @@
 #include "sharedvars.h"
 #include "OnboardThreads/Camera.h"
+#include "OnboardThreads/gps.h"
 #include <iostream>
 using namespace std;
 
@@ -9,7 +10,7 @@ namespace SharedVars {
   std::deque<Queue_send> infosend;
   std::mutex infosendLock;
   std::condition_variable infosendCv;
-  
+
   std::mutex printLock;
 
   double batteryLevel;
@@ -38,6 +39,7 @@ namespace SharedVars {
 
   Vector3d currentGpsPosition;
   std::mutex currentGpsPositionLock;
+  Vector3d homeGpsPosition;
 
   double currentGpsSpeed;
   std::mutex currentGpsSpeedLock;
@@ -60,10 +62,18 @@ namespace SharedVars {
   char* receiveBuffer;
   std::mutex receiveBufferLock;
 
-  
+
 }
 
 void SharedVars::init() {
-  std::cout << "Initializing shared vars" << endl;
+  cout << "Initializing shared vars" << endl;
+  //init flightmode
+  flightMode = MANUAL;
+  //init home gps point
+  cout << "Initializing home GPS point" << endl;
+  // loc_t* data = GPS_info();
+  // homeGpsPosition.x = data->latitude;
+  // homeGpsPosition.y = data->longitude;
+  //init camera
   initCamera();
 }

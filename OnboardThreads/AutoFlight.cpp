@@ -353,20 +353,18 @@ void AQCVFlight() {
 
 void AQFlightLogic(int aqfd) {
   SharedVars::flightModeLock.lock();
-  SharedVars::flightMode = CVMODE;
-
   SharedVars::currentGpsPositionLock.lock();
   SharedVars::currentGpsSpeedLock.lock();
-  readGPSValues();
+  //readGPSValues();
 
   if(SharedVars::flightMode == GPS) {
     AQGPSFlight();
   }
-  if(SharedVars::flightMode == CVMODE) {
+  else if(SharedVars::flightMode == CVMODE) {
     AQCVFlight();
-  }
-  if(SharedVars::flightMode == LAND) {
-    AQDebugMode2();
+  } else {
+    dprint("--- Manual Mode ---");
+    createAQFlightCommand(MANUAL_MODE, DEFAULT_PITCH_VALUE, DEFAULT_YAW_VALUE, 0);
   }
   sendAQFlightCommand(aqfd);
 

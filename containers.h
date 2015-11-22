@@ -6,7 +6,7 @@ enum FlightMode {
     GPS,
     CVMODE,
     LAND,
-    home
+    HOME
 };
 //public enum FlightMode { manualFlight, gpsNav, roadLineDetection, returnHome, landNow};
 struct Vector3d {

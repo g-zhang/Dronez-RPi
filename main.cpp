@@ -10,53 +10,65 @@
 using namespace std;
 
 void init() {
+    cout << "Turning on GPS" << endl;
+    gps_init();
     //init all shared vars
     cout << "Initializing variables" << endl;
     SharedVars::init();
-    cout<<"Turning on GPS"<<endl;
-    gps_init();
     cout << "Initializing threads" << endl;
 
 }
 
+void readGPSFile(char* filename) {
+  ifstream gpsplanfile;
+  gpsplanfile.open(filename);
+  Vector3d current = { 0, 0, 0 };
+
+  current = SharedVars::homeGpsPosition;
+  cout << "Current lat: " << current.x << endl;
+  cout << "Current long: " << current.y << endl;
+
+  char type = 0;
+  int num = 0;
+  gpsplanfile >> type >> num;
+  //cout << type << " " << num << endl;
+
+  SharedVars::gpsFlightPlanLock.lock();
+
+  for(int i = 0; i < num; i++) {
+    double heading = 0.0;
+    double distance = 0.0;
+    gpsplanfile >> heading >> distance;
+    cout << heading << " "<< distance << endl;
+    Vector3d newpoint = findGPSPoint(current, heading, distance);
+    SharedVars::gpsFlightPlan.push(newpoint);
+    current = newpoint;
+  }
+
+  SharedVars::gpsFlightPlanLock.unlock();
+
+  // while(!SharedVars::gpsFlightPlan.empty()) {
+  //   cout << SharedVars::gpsFlightPlan.front().x << " " << SharedVars::gpsFlightPlan.front().y << endl;
+  //   SharedVars::gpsFlightPlan.pop();
+  // }
+
+  gpsplanfile.close();
+}
+
 void readArguments(int argc, char* argv[]) {
-  if (argc > 1) {
-    ifstream gpsplanfile;
-    cout << argv[1] << endl;
-    gpsplanfile.open(argv[1]);
-    Vector3d current = { 0, 0, 0 };
-
-    loc_t* data = GPS_info();
-    current.x = data->latitude;
-    current.y = data->longitude;
-    cout << "Current lat: " << current.x << endl;
-    cout << "Current long: " << current.y << endl;
-
-    char type = 0;
-    int num = 0;
-    gpsplanfile >> type >> num;
-    //cout << type << " " << num << endl;
-
-    SharedVars::gpsFlightPlanLock.lock();
-
-    for(int i = 0; i < num; i++) {
-      double heading = 0.0;
-      double distance = 0.0;
-      gpsplanfile >> heading >> distance;
-      cout << heading << " "<< distance << endl;
-      Vector3d newpoint = findGPSPoint(current, heading, distance);
-      SharedVars::gpsFlightPlan.push(newpoint);
-      current = newpoint;
+  if(argc > 1) {
+    if(argv[1][0] == 'G') {
+      cout << "Starting debugging mode in GPS, reading in list from file: ";
+      SharedVars::flightMode = GPS;
+      if(argc > 2) {
+        cout << argv[2] << endl;
+        readGPSFile(argv[2]);
+      }
     }
-
-      SharedVars::gpsFlightPlanLock.unlock();
-
-    // while(!SharedVars::gpsFlightPlan.empty()) {
-    //   cout << SharedVars::gpsFlightPlan.front().x << " " << SharedVars::gpsFlightPlan.front().y << endl;
-    //   SharedVars::gpsFlightPlan.pop();
-    // }
-
-    gpsplanfile.close();
+    if(argv[1][0] == 'C') {
+      cout << "Starting debugging mode in CV mode" << endl;
+      SharedVars::flightMode = CVMODE;
+    }
   }
 }
 
