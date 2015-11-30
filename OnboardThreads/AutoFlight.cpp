@@ -214,6 +214,30 @@ void AQDebugMode2() {
   counter2++;
 }
 
+void AQLand() {
+    SharedVars::barometerReadingLock.lock();
+    if(SharedVars::barometerReading > LANDING_THRESHOLD) {
+      dprint("Landing...");
+      createAQFlightCommand(AUTO_MODE, DEFAULT_PITCH_VALUE, DEFAULT_YAW_VALUE, -ALTITUDE_BUMP_SPEED);
+    } else {
+      SharedVars::flightMode = MANUAL;
+    }
+    SharedVars::barometerReadingLock.unlock();
+}
+
+void AQGoHome() {
+    SharedVars::gpsFlightPlanLock.lock();
+    dprint("HOME command received, deleting gps flight plan");
+    while(!SharedVars::gpsFlightPlan.empty()) {
+      SharedVars::gpsFlightPlan.pop();
+    }
+    dprint("Adding gps home point to flightplan");
+    SharedVars::gpsFlightPlan.push(SharedVars::homeGpsPosition);
+
+    SharedVars::flightMode = GPS;
+    SharedVars::gpsFlightPlanLock.unlock();
+}
+
 void AQGPSFlight() {
   //gps mode
   SharedVars::gpsFlightPlanLock.lock();
@@ -362,7 +386,14 @@ void AQFlightLogic(int aqfd) {
   }
   else if(SharedVars::flightMode == CVMODE) {
     AQCVFlight();
-  } else {
+  }
+  else if(SharedVars::flightMode == HOME) {
+    AQGoHome();
+  }
+  else if(SharedVars::flightMode == LAND) {
+    AQLand();
+  }
+  else {
     dprint("--- Manual Mode ---");
     createAQFlightCommand(MANUAL_MODE, DEFAULT_PITCH_VALUE, DEFAULT_YAW_VALUE, 0);
   }

@@ -69,6 +69,14 @@ void readArguments(int argc, char* argv[]) {
       cout << "Starting debugging mode in CV mode" << endl;
       SharedVars::flightMode = CVMODE;
     }
+    if(argv[1][0] == 'H') {
+      cout << "Starting debugging mode in HOME mode" << endl;
+      SharedVars::flightMode = HOME;
+    }
+    if(argv[1][0] == 'L') {
+      cout << "Starting debugging mode in LAND mode" << endl;
+      SharedVars::flightMode = LAND;
+    }
   }
 }
 
