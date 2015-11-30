@@ -24,7 +24,10 @@ void readGPSFile(char* filename) {
   gpsplanfile.open(filename);
   Vector3d current = { 0, 0, 0 };
 
-  current = SharedVars::homeGpsPosition;
+  loc_t data;
+  gps_location(&data);
+  current.x = data.latitude;
+  current.y = data.longitude;
   cout << "Current lat: " << current.x << endl;
   cout << "Current long: " << current.y << endl;
 
