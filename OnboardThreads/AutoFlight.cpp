@@ -505,15 +505,22 @@ Vector3d findGPSPoint(const Vector3d& gpspt_a, const double& heading, const doub
 }
 
 void readGPSValues() {
-  loc_t* data = GPS_info();
-  SharedVars::currentGpsPosition.x = data->latitude;
-  SharedVars::currentGpsPosition.y = data->longitude;
-  SharedVars::currentGpsPosition.z = data->altitude;
-  SharedVars::currentGpsSpeed = data->speed;
+  loc_t data;
+  gps_location(&data);
+  SharedVars::currentGpsPosition.x = data.latitude;
+  SharedVars::currentGpsPosition.y = data.longitude;
+  SharedVars::currentGpsPosition.z = data.altitude;
+  SharedVars::currentGpsSpeed = data.speed;
 }
 
 void autoflight_main() {
+  //init home gps point
+  dprint("Initializing home GPS point");
+  loc_t data;
+  gps_location(&data);
+  SharedVars::homeGpsPosition.x = data.latitude;
+  SharedVars::homeGpsPosition.y = data.longitude;
+
   dprint("Auto Flight Thread started");
   AQBoardIOMain();
-
 }

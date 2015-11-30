@@ -69,11 +69,6 @@ void SharedVars::init() {
   cout << "Initializing shared vars" << endl;
   //init flightmode
   flightMode = MANUAL;
-  //init home gps point
-  cout << "Initializing home GPS point" << endl;
-  loc_t* data = GPS_info();
-  homeGpsPosition.x = data->latitude;
-  homeGpsPosition.y = data->longitude;
   //init camera
   initCamera();
 }
