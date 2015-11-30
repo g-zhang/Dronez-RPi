@@ -129,7 +129,14 @@ uint8_t nmea_get_message_type(const char *message)
 }
 
 uint8_t nmea_valid_checksum(const char *message) {
-    uint8_t checksum= (uint8_t)strtol(strchr(message, '*')+1, NULL, 16);
+    if(message == NULL) {
+      return _EMPTY;
+    }
+    const char* first = strchr(message, '*');
+    if(first == NULL) {
+      return _EMPTY;
+    }
+    uint8_t checksum= (uint8_t)strtol(first+1, NULL, 16);
 
     char p;
     uint8_t sum = 0;
@@ -144,4 +151,3 @@ uint8_t nmea_valid_checksum(const char *message) {
 
     return _EMPTY;
 }
-
