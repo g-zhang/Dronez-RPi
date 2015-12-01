@@ -1,6 +1,7 @@
 #include <thread>
 #include <iostream>
 #include <fstream>
+#include <unistd.h>
 #include "containers.h"
 #include "sharedvars.h"
 #include "OnboardThreads/XbeeInterface.h"
@@ -85,11 +86,21 @@ void readArguments(int argc, char* argv[]) {
 
 int main(int argc, char* argv[]){
     init();
+
+  // thread Xbee_read_in(read_in);
+
+//while(1) {    
+//int i = 4;
+//send_data(&i, sizeof(int), 'i', xbee_comm);
+//send_pic("ok.jpg");
+//sleep(6);
+//}
+
     readArguments(argc, argv);
     //start threads
     std::thread AutoFlightThread(autoflight_main);
-    //std::thread XbeeInterfaceThread(xbee_main);
-    //thread Xbee_read_in(read_in);
+    std::thread XbeeInterfaceThread(xbee_main);
+    thread Xbee_read_in(read_in);
 
     //wait for threads to exit
     //XbeeInterfaceThread.join();

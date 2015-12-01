@@ -16,8 +16,9 @@ using namespace std;
 void xbee_main() {
     cout << "xbee thread started" << endl;
     unique_lock<mutex> infosendULock(SharedVars::infosendLock);
-    infosendULock.lock();	
+    //infosendULock.lock();	
     while(true){
+	//infosendULock.lock();
 	while(!SharedVars::infosend.empty()){
 		SharedVars::infosendCv.wait(infosendULock);
 	}
@@ -25,8 +26,9 @@ void xbee_main() {
             SharedVars::infosend.front().send_data();
             SharedVars::infosend.pop_front();
         }
+	//infosendULock.unlock();
     }
-    infosendULock.unlock();
+    //infosendULock.unlock();
 }
 
 void read_in(){
@@ -194,7 +196,8 @@ int set_serial(int which){
     memset(&tio,0,sizeof(tio));
     tio.c_iflag=0;
     tio.c_oflag=0;
-    tio.c_cflag=CS8|CREAD|CLOCAL;           // 8n1, see termios.h for more information
+    tio.c_cflag=CS8|CREAD|CLOCAL|CRTSCTS;           // 8n1, see termios.h for more information
+    //tio.c_cflag=CS8|CREAD|CLOCAL;
     tio.c_lflag=0;
     tio.c_cc[VMIN]=1;
     tio.c_cc[VTIME]=5;

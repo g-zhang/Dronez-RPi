@@ -10,9 +10,9 @@
 #include <fcntl.h>
 
 void xbee_main();
-#define MODEM "/dev/ttyUSB0"
-#define MODEM_PIC "/dev/ttyUSB0"
-#define BAUDRATE 9600    
+#define MODEM "/dev/ttyUSB1"
+#define MODEM_PIC "/dev/ttyUSB1"
+#define BAUDRATE B9600
 int set_serial(int which);
 void send_data(const void *c, int size, const char &code, const int &which);
 void read_in();
@@ -20,7 +20,7 @@ void parse(char *data, int size, char type);
 void send_pic(const char *name);
 
 static int xbee_comm = set_serial(0);
-static int xbee_pic = set_serial(1); // undo when you send pic
+static int xbee_pic = xbee_comm; // undo when you send pic
 
 
 //template <typename T>
