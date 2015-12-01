@@ -4,12 +4,14 @@ using namespace std;
 using namespace cv;
 
 void initCamera(){
+	
         SharedVars::Camera.set ( CV_CAP_PROP_FRAME_WIDTH,1920  );
         SharedVars::Camera.set ( CV_CAP_PROP_FRAME_HEIGHT, 1080 );
-        SharedVars::Camera.set ( CV_CAP_PROP_BRIGHTNESS,50  );
-        SharedVars::Camera.set ( CV_CAP_PROP_CONTRAST ,50  );
+        SharedVars::Camera.set ( CV_CAP_PROP_BRIGHTNESS,75  );
+        SharedVars::Camera.set ( CV_CAP_PROP_CONTRAST ,100  );
         SharedVars::Camera.set ( CV_CAP_PROP_SATURATION, 50  );
         SharedVars::Camera.set ( CV_CAP_PROP_GAIN, 50  );
+	
         cout<<"Connecting to camera"<<endl;
         if ( !SharedVars::Camera.open() ) {
                 cerr<<"Error opening camera"<<endl;
