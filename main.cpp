@@ -1,6 +1,7 @@
 #include <thread>
 #include <iostream>
 #include <fstream>
+#include <unistd.h>
 #include "containers.h"
 #include "sharedvars.h"
 #include "OnboardThreads/XbeeInterface.h"
@@ -24,7 +25,10 @@ void readGPSFile(char* filename) {
   gpsplanfile.open(filename);
   Vector3d current = { 0, 0, 0 };
 
-  current = SharedVars::homeGpsPosition;
+  loc_t data;
+  gps_location(&data);
+  current.x = data.latitude;
+  current.y = data.longitude;
   cout << "Current lat: " << current.x << endl;
   cout << "Current long: " << current.y << endl;
 
@@ -69,16 +73,34 @@ void readArguments(int argc, char* argv[]) {
       cout << "Starting debugging mode in CV mode" << endl;
       SharedVars::flightMode = CVMODE;
     }
+    if(argv[1][0] == 'H') {
+      cout << "Starting debugging mode in HOME mode" << endl;
+      SharedVars::flightMode = HOME;
+    }
+    if(argv[1][0] == 'L') {
+      cout << "Starting debugging mode in LAND mode" << endl;
+      SharedVars::flightMode = LAND;
+    }
   }
 }
 
 int main(int argc, char* argv[]){
     init();
+
+  // thread Xbee_read_in(read_in);
+
+//while(1) {    
+//int i = 4;
+//send_data(&i, sizeof(int), 'i', xbee_comm);
+//send_pic("ok.jpg");
+//sleep(6);
+//}
+
     readArguments(argc, argv);
     //start threads
     std::thread AutoFlightThread(autoflight_main);
-    //std::thread XbeeInterfaceThread(xbee_main);
-    //thread Xbee_read_in(read_in);
+    std::thread XbeeInterfaceThread(xbee_main);
+    thread Xbee_read_in(read_in);
 
     //wait for threads to exit
     //XbeeInterfaceThread.join();

@@ -18,6 +18,9 @@
 #define EARTH_RADIUS 6371000 //m
 
 /** FLIGHT CONFIG VALUES **/
+#define LANDING_THRESHOLD 0.25 //min barometer reading to be "landed"
+#define ALTITUDE_BUMP_SPEED 0.01 //speed to move the drone up and down
+
 #define GPS_DIST 3 //m, the error margin of distance in meters considered "at" a gps point
 #define GPS_HEADING_ERROR_MARGIN 0.1 //radians, error margin in radians to be considered "on target"
 

@@ -14,10 +14,13 @@ void serial_init(void)
 {
     uart0_filestream = open(PORTNAME, O_RDWR | O_NOCTTY | O_NDELAY);
 
-    if (uart0_filestream == -1)
+    while (uart0_filestream == -1)
     {
-        //TODO error handling...
+      printf("GPS not connected, trying again in 3 seconds...\n");
+      usleep(3000000);
+      uart0_filestream = open(PORTNAME, O_RDWR | O_NOCTTY | O_NDELAY);
     }
+    printf("GPS connected.\n");
 }
 
 void serial_config(void)
@@ -75,4 +78,3 @@ void serial_close(void)
 {
     close(uart0_filestream);
 }
-

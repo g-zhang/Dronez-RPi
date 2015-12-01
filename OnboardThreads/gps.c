@@ -1,6 +1,7 @@
 #include "gps.h"
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 #include <math.h>
 
@@ -25,6 +26,7 @@ extern void gps_location(loc_t *coord) {
         gpgga_t gpgga;
         gprmc_t gprmc;
         char buffer[256];
+        memset(buffer, '\0', 256);
 
         serial_readln(buffer, 256);
         switch (nmea_get_message_type(buffer)) {
@@ -80,7 +82,7 @@ double gps_deg_dec(double deg_point)
     return round(absdlat + (absmlat/60) + (absslat/3600)) /1000000;
 }
 
-loc_t *GPS_info(){  
+loc_t *GPS_info(){
     static loc_t data;
     gps_location(&data);
     return &data;
@@ -94,11 +96,11 @@ int gps_main(void) {
     data = GPS_info();
 
         printf("Cord: %lf %lf\n"
-        	   "Speed:%lf\n" 
+        	   "Speed:%lf\n"
         	   "Altitude: %lf\n"
     			"Course: %lf\n",
         	 	data->latitude, data->longitude, data->speed,
         	 	data->altitude, data->course);
-        
+
     return EXIT_SUCCESS;
 }
