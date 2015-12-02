@@ -140,24 +140,15 @@ RouteInfo findRouteInfo(Vec4i avgLine, double pixelToMeters){
 }
 
 
-RouteInfo getNextRoadPoint(){	
+RouteInfo getNextRoadPoint(){
 	Mat src = takePic();
 	vector<Vec4i> lines = findLines(src);
-	/* Debugging stuff that I don't quite want to take out yet
-	if(lines.size() == 0){
-		namedWindow("pic",CV_WINDOW_NORMAL);
-		imshow("pic", src);
-		resizeWindow("pic",800,400);
-		waitKey();
-		cout << "No lines found" << endl;
-		continue;
-	}
-	*/
 	if(lines.size() == 0){
 		cout << "No lines found" << endl;
 		RouteInfo toReturn;
 		toReturn.distance = 0;
 		toReturn.heading = 0;
+		
 		return toReturn;
 	}
 
@@ -181,12 +172,17 @@ RouteInfo getNextRoadPoint(){
 	RouteInfo routeInfo = findRouteInfo(newLine, pixelToMeters);
 	
 	line( src, Point(avgLine[0], avgLine[1]), Point(avgLine[2], avgLine[3]), Scalar(0,0,255), 3, CV_AA);
-	namedWindow("avgLine",CV_WINDOW_NORMAL);
-	imshow("avgLine", src);
-	imwrite("avgLine.jpg", src);
-	resizeWindow("avgLine",800,400);
-	waitKey();
-	
+	//namedWindow("avgLine",CV_WINDOW_NORMAL);
+	//imshow("avgLine", src);
+	//resizeWindow("avgLine",800,400);
+	//waitKey();
+
+
+
+	routeInfo.distance = 0;
+	routeInfo.heading = 0;
+
+
 
 	return routeInfo;
 }

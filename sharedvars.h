@@ -13,7 +13,8 @@
 #include "raspicam/raspicam_cv.h"
 
 namespace SharedVars {
-  extern raspicam::RaspiCam_Cv Camera;
+  //extern raspicam::RaspiCam_Cv Camera;
+  extern std::mutex cameraLock;
 
   extern std::deque<Queue_send> infosend;
   extern std::mutex infosendLock;

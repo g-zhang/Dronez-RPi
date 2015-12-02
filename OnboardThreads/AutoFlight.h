@@ -33,6 +33,8 @@
 #define CV_GPS_DIST 3 //m, the error margin of distance in meters considered "at" a gps point
 #define CV_HOLD_TIME 3 //#of loops to hold at gps point before taking picture and calculating next route
 
+#define MIN_BATT_VOLT 0.0 //min battery voltage before initiating auto land
+
 /*** ENUM AND TYPES ***/
 
 enum AQDataValuesIndex {

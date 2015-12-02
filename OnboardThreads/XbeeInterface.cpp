@@ -15,17 +15,22 @@ using namespace std;
 
 void xbee_main() {
     cout << "xbee thread started" << endl;
-    unique_lock<mutex> infosendULock(SharedVars::infosendLock);
+    //unique_lock<mutex> infosendULock(SharedVars::infosendLock);
     //infosendULock.lock();	
     while(true){
 	//infosendULock.lock();
-	while(!SharedVars::infosend.empty()){
-		SharedVars::infosendCv.wait(infosendULock);
-	}
+	//while(!SharedVars::infosend.empty()){
+	//	SharedVars::infosendCv.wait(infosendULock);
+	//}
+	SharedVars::infosendLock.lock();
         if(SharedVars::infosend.size()){
             SharedVars::infosend.front().send_data();
             SharedVars::infosend.pop_front();
-        }
+	    SharedVars::infosendLock.unlock();
+        } else {
+	    SharedVars::infosendLock.unlock();
+	    sleep(2);
+	}
 	//infosendULock.unlock();
     }
     //infosendULock.unlock();
@@ -63,10 +68,13 @@ void read_in(){
                     state++;
                     if (i_data == size){
                         cout<<"Parsing\n";
+			SharedVars::infosendLock.lock();
                         SharedVars::infosend.push_front(
                             Queue_send( &which_mes, sizeof(which_mes),
                                 'r')
                         );
+			SharedVars::infosendLock.unlock();
+			SharedVars::infosendCv.notify_one();
                         parse(data, size, type);
                     }
                     else{
@@ -156,6 +164,7 @@ void send_pic(const char *name){
     fd = open(name ,O_RDONLY);
     if(fd == -1){
         cout<<"pic not found\n";
+	close(fd);
         return;
     }
     length=lseek(fd,0,SEEK_END);
@@ -163,6 +172,9 @@ void send_pic(const char *name){
     char pic_info[length];
     read(fd, pic_info, length);
     send_data(pic_info, length,'p', xbee_comm);
+    if(close(fd) == -1) {
+	cout << " !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! " << endl;
+	}
 }
 
 void parse(char *data, int size, char type){

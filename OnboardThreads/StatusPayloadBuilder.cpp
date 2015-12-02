@@ -10,7 +10,7 @@ void statusPayloadBuilder_main(){
 		SharedVars::infosendLock.lock();
 		SharedVars::infosend.push_back(toSend);
 		SharedVars::infosendLock.unlock();
-		
+		SharedVars::infosendCv.notify_one();	
 		this_thread::sleep_for (chrono::seconds(1));	
 	}
 } 

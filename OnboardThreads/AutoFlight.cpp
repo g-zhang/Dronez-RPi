@@ -377,6 +377,14 @@ void AQCVFlight() {
 
 void AQFlightLogic(int aqfd) {
   SharedVars::flightModeLock.lock();
+
+  SharedVars::batteryLevelLock.lock();
+  if(SharedVars::batteryLevel <= MIN_BATT_VOLT) {
+    dprint("Warning: Low Battery. Switching to autoland mode");
+    SharedVars::flightMode = LAND;
+  }
+  SharedVars::batteryLevelLock.unlock();
+
   SharedVars::currentGpsPositionLock.lock();
   SharedVars::currentGpsSpeedLock.lock();
   readGPSValues();

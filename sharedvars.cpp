@@ -5,7 +5,8 @@
 using namespace std;
 
 namespace SharedVars {
-  raspicam::RaspiCam_Cv Camera;
+  //raspicam::RaspiCam_Cv Camera;
+  std::mutex cameraLock;
 
   std::deque<Queue_send> infosend;
   std::mutex infosendLock;

@@ -8,10 +8,11 @@
 #include <stdio.h>
 #include <unistd.h>
 #include <fcntl.h>
+#include <iostream>
 
 void xbee_main();
-#define MODEM "/dev/ttyUSB1"
-#define MODEM_PIC "/dev/ttyUSB1"
+#define MODEM "/dev/ttyUSB0"
+#define MODEM_PIC "/dev/ttyUSB0"
 #define BAUDRATE B9600
 int set_serial(int which);
 void send_data(const void *c, int size, const char &code, const int &which);
@@ -22,13 +23,11 @@ void send_pic(const char *name);
 static int xbee_comm = set_serial(0);
 static int xbee_pic = xbee_comm; // undo when you send pic
 
-
-//template <typename T>
-
 class Queue_send{
 public:
 	Queue_send( void *c,const int &size_in, char code_in)
 	{
+		is_pic = false;
 		code = code_in;
 		size = size_in;
 		send[0] = 133;
@@ -43,39 +42,23 @@ public:
     		send[size-2] = 22;
     		send[size-1] = 243;
 	}
+	Queue_send(std::string name) : pic_name(name), is_pic(true){} 
 	void send_data(){
-		write(xbee_comm,send,size);
+		if(!is_pic){
+			std::cout<<size - 9<<std::endl;
+			write(xbee_comm,send,size);
+		}
+		else
+			send_pic(pic_name.c_str());
 		return;
 	};
 private:
 	char send[200];
 	char code;
 	int size;
-};
-
-/*
-class Pic_send : public Queue_send{
-public:
-	Pic_send(std::string name_in) : pic_name(name_in){}
-	virtual void send() const{
-		char temp[pic_name.size()];
-		std::memcpy(temp, pic_name.c_str(),pic_name.size());
-		send_pic(temp);
-	}
-private:
 	std::string pic_name;
+	bool is_pic;
 };
 
-template <typename T>
-class Struct_send : public Queue_send{
-public:
-	Struct_send(T info_in, char code_in) : info(info_in), code(code_in){}
-	virtual void send() const{
-		send_data (&info, sizeof(info), code);
-	}
-private:
-	T info;
-	char code;
-};
-*/
 #endif
+

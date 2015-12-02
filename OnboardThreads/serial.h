@@ -4,7 +4,7 @@
 #include <inttypes.h>
 
 #ifndef PORTNAME
-#define PORTNAME "/dev/ttyUSB0"
+#define PORTNAME "/dev/ttyGPS"
 #endif
 
 void serial_init(void);

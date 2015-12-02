@@ -7,6 +7,8 @@
 #include "OnboardThreads/XbeeInterface.h"
 #include "OnboardThreads/AutoFlight.h"
 #include "OnboardThreads/gps.h"
+#include "OnboardThreads/ImageQueueBuilder.h"
+#include "OnboardThreads/StatusPayloadBuilder.h"
 
 using namespace std;
 
@@ -98,9 +100,11 @@ int main(int argc, char* argv[]){
 
     readArguments(argc, argv);
     //start threads
-    std::thread AutoFlightThread(autoflight_main);
-    std::thread XbeeInterfaceThread(xbee_main);
+    thread AutoFlightThread(autoflight_main);
+    thread XbeeInterfaceThread(xbee_main);
     thread Xbee_read_in(read_in);
+    thread StatusThread(statusPayloadBuilder_main);
+    thread ImageBuilderThread(imageQueueBuilder_main);
 
     //wait for threads to exit
     //XbeeInterfaceThread.join();
