@@ -42,7 +42,7 @@ Mat takePic() {
 	SharedVars::cameraLock.lock();
 	system("raspistill -o out.jpg -t 1");
 	SharedVars::cameraLock.unlock();
-  return imread("out.jpg");
+	return imread("out.jpg");
 }
 
 char * matToBytes(Mat image)
