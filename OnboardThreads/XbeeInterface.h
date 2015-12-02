@@ -11,8 +11,8 @@
 #include <iostream>
 
 void xbee_main();
-#define MODEM "/dev/ttyUSB0"
-#define MODEM_PIC "/dev/ttyUSB0"
+#define MODEM "/dev/ttyXBEE"
+#define MODEM_PIC "/dev/ttyXBEE"
 #define BAUDRATE B9600
 int set_serial(int which);
 void send_data(const void *c, int size, const char &code, const int &which);
@@ -21,7 +21,7 @@ void parse(char *data, int size, char type);
 void send_pic(const char *name);
 
 static int xbee_comm = set_serial(0);
-static int xbee_pic = xbee_comm; // undo when you send pic
+//static int xbee_pic = xbee_comm; // undo when you send pic
 
 class Queue_send{
 public:
@@ -42,10 +42,10 @@ public:
     		send[size-2] = 22;
     		send[size-1] = 243;
 	}
-	Queue_send(std::string name) : pic_name(name), is_pic(true){} 
+	Queue_send(std::string name) : pic_name(name), is_pic(true){}
 	void send_data(){
 		if(!is_pic){
-			std::cout<<size - 9<<std::endl;
+			std::cout << "Xbee sent: " << size - 9 <<std::endl;
 			write(xbee_comm,send,size);
 		}
 		else
@@ -61,4 +61,3 @@ private:
 };
 
 #endif
-

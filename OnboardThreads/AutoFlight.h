@@ -33,7 +33,9 @@
 #define CV_GPS_DIST 3 //m, the error margin of distance in meters considered "at" a gps point
 #define CV_HOLD_TIME 3 //#of loops to hold at gps point before taking picture and calculating next route
 
-#define MIN_BATT_VOLT 0.0 //min battery voltage before initiating auto land
+//#define ENABLE_BATTERY_AUTO 1 //uncomment to enable auto landing and auto home mode when battery becomes low
+#define MIN_BATT_VOLT_HOME 11.13 //min battery voltage before initiating auto home mode
+#define MIN_BATT_VOLT 10.92 //min battery voltage before initiating auto land
 
 /*** ENUM AND TYPES ***/
 

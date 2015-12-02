@@ -216,6 +216,7 @@ void AQDebugMode2() {
 
 void AQLand() {
     SharedVars::barometerReadingLock.lock();
+    dprint("AQ: LANDING MODE");
     if(SharedVars::barometerReading > LANDING_THRESHOLD) {
       dprint("Landing...");
       createAQFlightCommand(AUTO_MODE, DEFAULT_PITCH_VALUE, DEFAULT_YAW_VALUE, -ALTITUDE_BUMP_SPEED);
@@ -227,7 +228,7 @@ void AQLand() {
 
 void AQGoHome() {
     SharedVars::gpsFlightPlanLock.lock();
-    dprint("HOME command received, deleting gps flight plan");
+    dprint("AQ: HOME command received, deleting gps flight plan");
     while(!SharedVars::gpsFlightPlan.empty()) {
       SharedVars::gpsFlightPlan.pop();
     }
@@ -378,12 +379,21 @@ void AQCVFlight() {
 void AQFlightLogic(int aqfd) {
   SharedVars::flightModeLock.lock();
 
-  SharedVars::batteryLevelLock.lock();
-  if(SharedVars::batteryLevel <= MIN_BATT_VOLT) {
-    dprint("Warning: Low Battery. Switching to autoland mode");
-    SharedVars::flightMode = LAND;
-  }
-  SharedVars::batteryLevelLock.unlock();
+  #ifdef ENABLE_BATTERY_AUTO
+    SharedVars::batteryLevelLock.lock();
+    if(SharedVars::batteryLevel <= MIN_BATT_VOLT) {
+      if(SharedVars::flightMode != LAND) {
+        dprint("Warning: Critical Battery. Switching to autoland mode");
+        SharedVars::flightMode = LAND;
+      }
+    } else if(SharedVars::batteryLevel <= MIN_BATT_VOLT_HOME) {
+      if(SharedVars::flightMode != HOME) {
+        dprint("Warning: Low Battery. Switching to home GPS mode");
+        SharedVars::flightMode = HOME;
+      }
+    }
+    SharedVars::batteryLevelLock.unlock();
+  #endif
 
   SharedVars::currentGpsPositionLock.lock();
   SharedVars::currentGpsSpeedLock.lock();
@@ -402,7 +412,7 @@ void AQFlightLogic(int aqfd) {
     AQLand();
   }
   else {
-    dprint("--- Manual Mode ---");
+    dprint("AQ: Manual Mode");
     createAQFlightCommand(MANUAL_MODE, DEFAULT_PITCH_VALUE, DEFAULT_YAW_VALUE, 0);
   }
   sendAQFlightCommand(aqfd);

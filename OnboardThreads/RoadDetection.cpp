@@ -3,7 +3,7 @@
 using namespace cv;
 
 //This function will take an image as input and return all lines that are found
-// in the image. The lines will be returned as a vector of Vec4i's. Vec4i is 
+// in the image. The lines will be returned as a vector of Vec4i's. Vec4i is
 //structured as such [startX, startY, endX, endY]. If too many/too few lines
 //are being detected the sensitivity of the algorithm can be adjusted by
 //editing the parameters passed to HoughLinesP.
@@ -16,8 +16,8 @@ vector<Vec4i> findLines(Mat &src)
  	if(src.empty())
  	{
      		cout << "can not open " << endl;
-		return lines;	
- 	}	
+		return lines;
+ 	}
 
  	Mat dst, cdst, smoothedImage;
 	Canny(src, dst, 50, 200, 3);
@@ -40,7 +40,7 @@ vector<Vec4i> findLines(Mat &src)
 //average line of all of them. Returned as a Vec4i.
 Vec4i findAverageLine(vector<Vec4i> &lines)
 {
-	
+
 	int startX = 0;
 	int startY = 0;
 	int endX = 0;
@@ -50,13 +50,13 @@ Vec4i findAverageLine(vector<Vec4i> &lines)
 		startX += l[0];
 		startY += l[1];
 		endX += l[2];
-		endY += l[3];	
+		endY += l[3];
 	}
 	startX = startX / lines.size();
 	startY = startY / lines.size();
 	endX = endX / lines.size();
 	endY = endY / lines.size();
-	
+
 	return( Vec4i(startX, startY, endX, endY) );
 }
 
@@ -65,16 +65,16 @@ Vec4i findAverageLine(vector<Vec4i> &lines)
 double findRotationAmount(Vec4i avgLine)
 {
 
-	double deltaY = avgLine[3] - avgLine[1]; 
+	double deltaY = avgLine[3] - avgLine[1];
 	double deltaX = avgLine[2] - avgLine[0];
 
 	double rotateAmount = 0;
-		
+
 	if( deltaX == 0 )
 		rotateAmount = 0;
 	else{
 		double angle = atan(deltaY / deltaX) * 180 / M_PI;
-		
+
 		if(angle <= 0)
 			rotateAmount = 90 + angle;
 		else{
@@ -100,7 +100,7 @@ double findHorizontalShiftAmount( double height, Vec4i line, double imageWidth){
 
 	double horizontalShift = (lineCenter/imageWidth) * pictureWidth;
 
-	return horizontalShift; 
+	return horizontalShift;
 
 }
 
@@ -110,7 +110,7 @@ RouteInfo findRouteInfo(Vec4i avgLine, double pixelToMeters){
 	double oldX = (avgLine[0] + avgLine[2]) / 2;
 	double oldY = (avgLine[1] + avgLine[3]) / 2;
 	//oldX *= pixelToMeters;
-	//oldY *= pixelToMeters;	
+	//oldY *= pixelToMeters;
 	double rot = findRotationAmount(avgLine);
 	bool negativeSlope = false;
 	if(rot < 0){
@@ -121,13 +121,13 @@ RouteInfo findRouteInfo(Vec4i avgLine, double pixelToMeters){
 	double yMovement = stepDistance * sin(rot);
 	double newX = 0;
 	double newY = 0;
-	if(negativeSlope)	
+	if(negativeSlope)
 		newX = oldX - xMovement;
 	else
 		newX = oldX + xMovement;
 
 	newY = oldY + yMovement;
-	
+
 	//double distance = sqrt((newX * newX) + (newY * newY)) * pixelToMeters;
 
 	double heading = atan2(newX, newY) - (M_PI / 2);
@@ -148,43 +148,33 @@ RouteInfo getNextRoadPoint(){
 		RouteInfo toReturn;
 		toReturn.distance = 0;
 		toReturn.heading = 0;
-		
+
 		return toReturn;
 	}
 
-	
+
 	int centerX = src.rows / 2;
 	int centerY = src.cols / 2;
 	Vec4i avgLine = findAverageLine(lines);
 
 	cout << "Average Start: (" << avgLine[0] << "," << avgLine[1] << ")" << endl;
 	cout << "Average End: (" << avgLine[2] << "," << avgLine[3] << ")" << endl;
-	
+
 	Vec4i newLine( avgLine[0]-centerX, centerY-avgLine[1], avgLine[2]-centerX,
 			centerY-avgLine[3] );
-	
+
 	SharedVars::ultrasonicReadingLock.lock();
 	double droneHeight = 2;//Temp need to change this to height base on barometer
-	SharedVars::ultrasonicReadingLock.unlock();	
+	SharedVars::ultrasonicReadingLock.unlock();
 
 	double pixelToMeters = CalculatePixelsToMeters(droneHeight, src.rows);
 
 	RouteInfo routeInfo = findRouteInfo(newLine, pixelToMeters);
-	
+
 	line( src, Point(avgLine[0], avgLine[1]), Point(avgLine[2], avgLine[3]), Scalar(0,0,255), 3, CV_AA);
 	//namedWindow("avgLine",CV_WINDOW_NORMAL);
 	//imshow("avgLine", src);
 	//resizeWindow("avgLine",800,400);
 	//waitKey();
-
-
-
-	routeInfo.distance = 0;
-	routeInfo.heading = 0;
-
-
-
 	return routeInfo;
 }
-
-

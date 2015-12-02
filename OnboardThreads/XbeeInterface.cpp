@@ -16,7 +16,7 @@ using namespace std;
 void xbee_main() {
     cout << "xbee thread started" << endl;
     //unique_lock<mutex> infosendULock(SharedVars::infosendLock);
-    //infosendULock.lock();	
+    //infosendULock.lock();
     while(true){
 	//infosendULock.lock();
 	//while(!SharedVars::infosend.empty()){
@@ -143,7 +143,7 @@ void send_data(const void *c, int size, const char &code, const int &which){
         cout<<temp<<" ";
     }
     cout<<endl;
-    
+
     for(int i = 0; i < size; i++){
         cout<<i<<" ";
     } for debugging*/
@@ -163,8 +163,8 @@ void send_pic(const char *name){
     int fd, length;
     fd = open(name ,O_RDONLY);
     if(fd == -1){
-        cout<<"pic not found\n";
-	close(fd);
+        cout << "Xbee: pic not found" << endl;
+        close(fd);
         return;
     }
     length=lseek(fd,0,SEEK_END);
@@ -172,9 +172,7 @@ void send_pic(const char *name){
     char pic_info[length];
     read(fd, pic_info, length);
     send_data(pic_info, length,'p', xbee_comm);
-    if(close(fd) == -1) {
-	cout << " !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! " << endl;
-	}
+    close(fd);
 }
 
 void parse(char *data, int size, char type){
@@ -194,14 +192,14 @@ int set_serial(int which){
     int tty_fd;//, flags;
     //tcgetattr(STDOUT_FILENO,&old_stdio);
     memset(&stdio,0,sizeof(stdio));
-    
+
     stdio.c_iflag=0;
     stdio.c_oflag=0;
     stdio.c_cflag=0;
     stdio.c_lflag=0;
     stdio.c_cc[VMIN]=1;
     stdio.c_cc[VTIME]=0;
-    
+
     //tcsetattr(STDOUT_FILENO,TCSANOW,&stdio);
     //tcsetattr(STDOUT_FILENO,TCSAFLUSH,&stdio);
     fcntl(STDIN_FILENO, F_SETFL, O_NONBLOCK);       // make the reads non-blocking
@@ -231,7 +229,7 @@ int set_serial(int which){
            cout<<"Xbee opened on "<<MODEM_PIC <<'\n';
         }
     }
-    cfsetospeed(&tio,BAUDRATE);    
+    cfsetospeed(&tio,BAUDRATE);
     cfsetispeed(&tio,BAUDRATE);            // baudrate is declarated above
     tcsetattr(tty_fd,TCSANOW,&tio);
     return tty_fd;

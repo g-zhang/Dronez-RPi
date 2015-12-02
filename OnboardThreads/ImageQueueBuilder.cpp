@@ -10,7 +10,7 @@ void imageQueueBuilder_main(){
 	Mat smallerPic;
 	Mat bw;
 	while(true){
-		cout << "Taking vid feed img" << endl;	
+		cout << "ImageQueueBuilder: Taking video feed image" << endl;
 		currentPic = takePic();
 		Size picSize;
 		picSize.height = 192;
@@ -21,7 +21,7 @@ void imageQueueBuilder_main(){
     		compression_params.push_back(CV_IMWRITE_JPEG_QUALITY);
     		compression_params.push_back(35);
 		string name = "compressed.jpg";
-		imwrite(name, bw, compression_params);	
+		imwrite(name, bw, compression_params);
 		//process Image
 		i++;
 		//send Image
@@ -30,7 +30,6 @@ void imageQueueBuilder_main(){
 		SharedVars::infosend.push_back(toSend);
 		SharedVars::infosendLock.unlock();
 		SharedVars::infosendCv.notify_one();
-		cout << "sleeping" << endl;
 		sleep(4);
 	}
 }

@@ -91,7 +91,7 @@ int main(int argc, char* argv[]){
 
   // thread Xbee_read_in(read_in);
 
-//while(1) {    
+//while(1) {
 //int i = 4;
 //send_data(&i, sizeof(int), 'i', xbee_comm);
 //send_pic("ok.jpg");
