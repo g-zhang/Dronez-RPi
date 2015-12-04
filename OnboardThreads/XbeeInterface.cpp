@@ -68,13 +68,13 @@ void read_in(){
                     state++;
                     if (i_data == size){
                         cout<<"Parsing\n";
-			SharedVars::infosendLock.lock();
+                        SharedVars::infosendLock.lock();
                         SharedVars::infosend.push_front(
                             Queue_send( &which_mes, sizeof(which_mes),
                                 'r')
                         );
-			SharedVars::infosendLock.unlock();
-			SharedVars::infosendCv.notify_one();
+                        SharedVars::infosendLock.unlock();
+                        SharedVars::infosendCv.notify_one();
                         parse(data, size, type);
                     }
                     else{
@@ -119,8 +119,8 @@ void read_in(){
             else if (buffer[0] == 133 && state < 3)
                 state++;
         }
+        sleep(1);
     }
-    usleep(100);
 }
 
 void send_data(const void *c, int size, const char &code, const int &which){

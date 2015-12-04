@@ -26,6 +26,7 @@ void initCamera(){
 }
 
 Mat takePic() {
+	cv::Mat image;
 	/*
         cv::Mat image;
         cout<<"Capturing"<<endl;
@@ -41,8 +42,9 @@ Mat takePic() {
 	*/
 	SharedVars::cameraLock.lock();
 	system("raspistill -o out.jpg -t 1");
+	image = imread("out.jpg");
 	SharedVars::cameraLock.unlock();
-	return imread("out.jpg");
+	return image;
 }
 
 char * matToBytes(Mat image)

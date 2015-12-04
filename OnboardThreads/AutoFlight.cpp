@@ -5,6 +5,7 @@
 #include <chrono>
 #include <string>
 #include <cstring>
+#include <time.h>
 #include <unistd.h>			//Used for UART
 #include <fcntl.h>			//Used for UART
 #include <termios.h>		//Used for UART
@@ -428,6 +429,8 @@ void AQBoardIOMain() {
   int timeoutcount = 0;
   //main loop
   while(1) {
+    clock_t t = clock();
+
     if(aqfd == -1) {
       dprint("ERROR: LOST CONNECTION TO AQ32!!!");
       aqfd = openAQ32Connection();
@@ -453,7 +456,14 @@ void AQBoardIOMain() {
         timeoutcount = 0;
       }
     }
-    this_thread::sleep_for(chrono::microseconds(AQ_TRANSFER_RATE));
+
+    t = clock() - t;
+    double secs = ((float)t) / CLOCKS_PER_SEC;
+    long usecs = round(secs * MICROSECOND);
+    usecs = AQ_TRANSFER_RATE - usecs;
+    usecs = usecs > 0 ? usecs : 0;
+    cout << "took: " << secs << " | sleeping for " << usecs << endl;
+    usleep(usecs);
   }
 }
 

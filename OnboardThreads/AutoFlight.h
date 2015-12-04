@@ -9,7 +9,7 @@
 /*** CONSTANT DEFINES ***/
 #define MICROSECOND 1000000.0 //number of microsecs in a sec
 
-#define AQ_TRANSFER_RATE 300000 //microsecs between each query
+#define AQ_TRANSFER_RATE 300000 //min microsecs between each query
 #define AQ_TIMEOUT_COUNT 3 //number of timeouts before re-opening the port
 #define AQ_MAX_RETRY_TIME 10 //seconds for re-opening the serial connection
 #define AQ_READBUF_SIZE 256
@@ -22,7 +22,7 @@
 #define ALTITUDE_BUMP_SPEED 0.01 //speed to move the drone up and down
 
 #define GPS_DIST 3 //m, the error margin of distance in meters considered "at" a gps point
-#define GPS_HEADING_ERROR_MARGIN 0.1 //radians, error margin in radians to be considered "on target"
+#define GPS_HEADING_ERROR_MARGIN 0.2 //radians, error margin in radians to be considered "on target"
 
 #define DEFAULT_YAW_VALUE 1500 //integer, PWD amount for no change in yaw
 #define TURN_YAW_OFFSET 50 //integer, PWD amount to change in yaw
