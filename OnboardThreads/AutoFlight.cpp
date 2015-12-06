@@ -377,6 +377,24 @@ void AQCVFlight() {
   cvFlightPlanLock.unlock();
 }
 
+void AQManualMode() {
+  dprint("AQ: Manual Mode");
+
+  cvFlightPlanLock.lock();
+  while(!cvFlightPlan.empty()) {
+    cvFlightPlan.pop();
+  }
+  cvFlightPlanLock.unlock();
+  
+  SharedVars::gpsFlightPlanLock.lock();
+  while(!SharedVars::gpsFlightPlan.empty()) {
+    SharedVars::gpsFlightPlan.pop();
+  }
+  SharedVars::gpsFlightPlanLock.unlock();
+
+  createAQFlightCommand(MANUAL_MODE, DEFAULT_PITCH_VALUE, DEFAULT_YAW_VALUE, 0);
+}
+
 void AQFlightLogic(int aqfd) {
   SharedVars::flightModeLock.lock();
 
@@ -412,9 +430,8 @@ void AQFlightLogic(int aqfd) {
   else if(SharedVars::flightMode == LAND) {
     AQLand();
   }
-  else {
-    dprint("AQ: Manual Mode");
-    createAQFlightCommand(MANUAL_MODE, DEFAULT_PITCH_VALUE, DEFAULT_YAW_VALUE, 0);
+  else { //manual mode
+    AQManualMode();
   }
   sendAQFlightCommand(aqfd);
 
