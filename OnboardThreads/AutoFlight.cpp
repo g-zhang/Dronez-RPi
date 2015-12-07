@@ -1,4 +1,5 @@
 #include <iostream>
+#include <iomanip>
 #include <cmath>
 #include <thread>
 #include <mutex>
@@ -256,7 +257,8 @@ void AQGPSFlight() {
     double headingtoTarget = findGPSHeading(SharedVars::currentGpsPosition, SharedVars::gpsFlightPlan.front());
     double angleDeltaToTarget = findRelativeHeading(SharedVars::heading, headingtoTarget);
     SharedVars::printLock.lock();
-    cout << "current lat/long: " << SharedVars::currentGpsPosition.x << " " << SharedVars::currentGpsPosition.y << endl;
+    cout << "current lat/long: " << fixed << setprecision(6) << SharedVars::currentGpsPosition.x << " " << SharedVars::currentGpsPosition.y << endl;
+    cout << "target lat/long: " << fixed << setprecision(6) <<  SharedVars::gpsFlightPlan.front().x << " " << SharedVars::gpsFlightPlan.front().y << endl;
     cout << "distancetoTarget: " << distancetoTarget << endl;
     cout << "headingtoTarget: " << headingtoTarget << endl;
     cout << "angleDeltaToTarget: " << angleDeltaToTarget << endl;
@@ -330,7 +332,8 @@ void AQCVFlight() {
     double headingtoTarget = findGPSHeading(SharedVars::currentGpsPosition, cvFlightPlan.front());
     double angleDeltaToTarget = findRelativeHeading(SharedVars::heading, headingtoTarget);
     SharedVars::printLock.lock();
-    cout << "current lat/long: " << SharedVars::currentGpsPosition.x << " " << SharedVars::currentGpsPosition.y << endl;
+    cout << "current lat/long: " << fixed << setprecision(6) << SharedVars::currentGpsPosition.x << " " << SharedVars::currentGpsPosition.y << endl;
+    cout << "target lat/long: " << fixed << setprecision(6) << cvFlightPlan.front().x << " " << cvFlightPlan.front().y << endl;
     cout << "distancetoTarget: " << distancetoTarget << endl;
     cout << "headingtoTarget: " << headingtoTarget << endl;
     cout << "angleDeltaToTarget: " << angleDeltaToTarget << endl;
@@ -385,7 +388,7 @@ void AQManualMode() {
     cvFlightPlan.pop();
   }
   cvFlightPlanLock.unlock();
-  
+
   SharedVars::gpsFlightPlanLock.lock();
   while(!SharedVars::gpsFlightPlan.empty()) {
     SharedVars::gpsFlightPlan.pop();

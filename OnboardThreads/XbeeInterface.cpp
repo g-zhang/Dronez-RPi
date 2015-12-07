@@ -46,7 +46,7 @@ void read_in(){
     char type = '1';
     char data[5000];
     while(1){
-        if (read(xbee_comm,buffer,1)>0){
+        while (read(xbee_comm,buffer,1)>0){
             bool restart = true;
             //int temp = buffer[0];
             //cout<<temp<<" "<<flush;

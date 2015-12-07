@@ -45,8 +45,9 @@ void readGPSFile(char* filename) {
     double heading = 0.0;
     double distance = 0.0;
     gpsplanfile >> heading >> distance;
-    cout << heading << " "<< distance << endl;
+    cout << heading << " " << distance << " => gps point: ";
     Vector3d newpoint = findGPSPoint(current, heading, distance);
+    cout << newpoint.x << " " << newpoint.y << endl;
     SharedVars::gpsFlightPlan.push(newpoint);
     current = newpoint;
   }
@@ -88,16 +89,6 @@ void readArguments(int argc, char* argv[]) {
 
 int main(int argc, char* argv[]){
     init();
-
-  // thread Xbee_read_in(read_in);
-
-//while(1) {
-//int i = 4;
-//send_data(&i, sizeof(int), 'i', xbee_comm);
-//send_pic("ok.jpg");
-//sleep(6);
-//}
-
     readArguments(argc, argv);
     //start threads
     thread AutoFlightThread(autoflight_main);
@@ -107,7 +98,6 @@ int main(int argc, char* argv[]){
     thread ImageBuilderThread(imageQueueBuilder_main);
 
     //wait for threads to exit
-    //XbeeInterfaceThread.join();
     AutoFlightThread.join();
 
     return 0;
