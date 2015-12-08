@@ -130,7 +130,7 @@ RouteInfo findRouteInfo(Vec4i avgLine, double pixelToMeters){
 
 	//double distance = sqrt((newX * newX) + (newY * newY)) * pixelToMeters;
 
-	double heading = atan2(newX, newY); //- (M_PI / 2);
+	double heading = atan2(newX, newY) + ANGLE_OFFSET; //- (M_PI / 2);
 
 	RouteInfo routeInfo;
 	routeInfo.distance = stepDistance;
@@ -172,9 +172,10 @@ RouteInfo getNextRoadPoint(){
 	RouteInfo routeInfo = findRouteInfo(newLine, pixelToMeters);
 
 	line( src, Point(avgLine[0], avgLine[1]), Point(avgLine[2], avgLine[3]), Scalar(0,0,255), 3, CV_AA);
-	namedWindow("avgLine",CV_WINDOW_NORMAL);
-	imshow("avgLine", src);
-	resizeWindow("avgLine",800,400);
-	waitKey();
+	imwrite("avgLine.jpg", src);
+	// namedWindow("avgLine",CV_WINDOW_NORMAL);
+	// imshow("avgLine", src);
+	// resizeWindow("avgLine",800,400);
+	// waitKey();
 	return routeInfo;
 }

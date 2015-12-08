@@ -314,7 +314,8 @@ void AQCVFlight() {
     RouteInfo route = getNextRoadPoint();
 
     SharedVars::printLock.lock();
-    cout << "AFlight:Roadline Info >> Distance = " << route.distance << ", RelHeading = " << route.heading << endl;
+    cout << "AFlight:Roadline Info >> Distance = " << route.distance << ", RelHeading = ";
+    cout << fixed << setprecision(9) << route.heading << endl;
     SharedVars::printLock.unlock();
 
     route.heading = constrainRadians(route.heading + SharedVars::heading, -M_PI, M_PI);

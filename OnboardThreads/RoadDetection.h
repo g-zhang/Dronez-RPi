@@ -6,6 +6,9 @@
 #include <iostream>
 #include <string>
 
+#define ANGLE_OFFSET -0.793054982 //radians
+
+
 
 using namespace std;
 
@@ -24,7 +27,7 @@ double CalculatePixelsToMeters(double height, double imageWidth);
 
 double findHorizontalShiftAmount(double height, cv::Vec4i line, double imageWidth);
 
-RouteInfo findRouteInfo(cv::Vec4i avgLine, double pixelToMeters); 
+RouteInfo findRouteInfo(cv::Vec4i avgLine, double pixelToMeters);
 
 RouteInfo getNextRoadPoint();
 
