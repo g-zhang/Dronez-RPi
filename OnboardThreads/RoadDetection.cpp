@@ -18,11 +18,18 @@ vector<Vec4i> findLines(Mat &src)
      		cout << "can not open " << endl;
 		return lines;
  	}
-
+	Mat smallerPic;
+	Size picSize;
+	picSize.height = 192;
+	picSize.width = 340;
+	resize(src, smallerPic, picSize);
+	src = smallerPic;
  	Mat dst, cdst, smoothedImage;
 	Canny(src, dst, 50, 200, 3);
 	cvtColor(dst, cdst, CV_GRAY2BGR);
-	GaussianBlur( dst, smoothedImage, Size( 31, 31 ), 0, 0 );
+	int kernalSize = 31;
+	double amount = 0;
+	GaussianBlur( dst, smoothedImage, Size( kernalSize, kernalSize ), amount, amount );
 	HoughLinesP(dst, lines, 4, CV_PI/180, 100, 50, 10 );
 	for( size_t i = 0; i < lines.size(); i++ )
 	{
@@ -30,7 +37,7 @@ vector<Vec4i> findLines(Mat &src)
 		line( smoothedImage, Point(l[0], l[1]), Point(l[2], l[3]), Scalar(0,0,255), 3, CV_AA);
 	}
 	//imshow("source", src);
-	//imshow("detected lines", smoothedImage);
+	imwrite("avgLine2.jpg", smoothedImage);
 	//waitKey();
 
 	return lines;
@@ -106,9 +113,25 @@ double findHorizontalShiftAmount( double height, Vec4i line, double imageWidth){
 
 RouteInfo findRouteInfo(Vec4i avgLine, double pixelToMeters){
 	double stepDistance = 5;
-
-	double oldX = (avgLine[0] + avgLine[2]) / 2;
-	double oldY = (avgLine[1] + avgLine[3]) / 2;
+	double bottomX = avgLine[0];
+	double topX = avgLine[2];
+	double bottomY = avgLine[1];
+	double topY = avgLine[3];
+	if(avgLine[3] > avgLine[1]){
+		bottomY = avgLine[3];
+		topY = avgLine[1];
+		bottomX = avgLine[2];
+		topX = avgLine[0];
+	} 
+		
+	double oldY = topY - bottomY;
+	oldY *= -1;
+	double oldX = topX - bottomX;
+	//double oldX = (avgLine[0] - avgLine[2]);
+	//double oldY = (avgLine[1] - avgLine[3]);
+	//oldX *= -1;
+	//oldY *= -1;
+	/*
 	//oldX *= pixelToMeters;
 	//oldY *= pixelToMeters;
 	double rot = findRotationAmount(avgLine);
@@ -130,8 +153,12 @@ RouteInfo findRouteInfo(Vec4i avgLine, double pixelToMeters){
 
 	//double distance = sqrt((newX * newX) + (newY * newY)) * pixelToMeters;
 
-	double heading = atan2(newX, newY) + ANGLE_OFFSET; //- (M_PI / 2);
-
+	double heading = atan2(newY, newX) + ANGLE_OFFSET; //- (M_PI / 2);
+	*/
+	cout << "old X = " << oldX << endl;
+	cout << "old Y = " << oldY << endl;
+	double heading = 0;
+	heading = atan(oldX/oldY);// - (M_PI / 2);
 	RouteInfo routeInfo;
 	routeInfo.distance = stepDistance;
 	routeInfo.heading = heading;
@@ -169,7 +196,7 @@ RouteInfo getNextRoadPoint(){
 
 	double pixelToMeters = CalculatePixelsToMeters(droneHeight, src.rows);
 
-	RouteInfo routeInfo = findRouteInfo(newLine, pixelToMeters);
+	RouteInfo routeInfo = findRouteInfo(avgLine, pixelToMeters);
 
 	line( src, Point(avgLine[0], avgLine[1]), Point(avgLine[2], avgLine[3]), Scalar(0,0,255), 3, CV_AA);
 	imwrite("avgLine.jpg", src);

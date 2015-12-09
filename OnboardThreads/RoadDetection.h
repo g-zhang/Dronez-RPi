@@ -6,7 +6,7 @@
 #include <iostream>
 #include <string>
 
-#define ANGLE_OFFSET -0.793054982 //radians
+#define ANGLE_OFFSET 0 //radians
 
 
 
