@@ -26,6 +26,7 @@ char AQ32RecvBuffer[AQ_READBUF_SIZE]; //pre declared buffer for readAQ32Sensors
 char AQ32SendBuffer[AQ_SENDBUF_SIZE];
 int AQ32SendBufferLen = 0;
 mutex AQFDLock;
+Vector3d prevGPSLocation = { 0, 0, 0 };
 
 //cv mode globals
 int cvModeHoldCount = 0;
@@ -556,10 +557,16 @@ Vector3d findGPSPoint(const Vector3d& gpspt_a, const double& heading, const doub
 void readGPSValues() {
   loc_t data;
   gps_location(&data);
+  prevGPSLocation = SharedVars::currentGpsPosition;
   SharedVars::currentGpsPosition.x = data.latitude;
   SharedVars::currentGpsPosition.y = data.longitude;
   SharedVars::currentGpsPosition.z = data.altitude;
   SharedVars::currentGpsSpeed = data.speed;
+
+  SharedVars::printLock.lock();
+  cout << "GPS: Moved " << findGPSDistance(prevGPSLocation, SharedVars::currentGpsPosition);
+  cout << " meters, Speed: " << SharedVars::currentGpsSpeed << endl;
+  SharedVars::printLock.unlock();
 }
 
 void autoflight_main() {
