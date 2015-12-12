@@ -30,6 +30,7 @@ sudo ldconfig
 
 * Then:
 ```
+cd Dronez-RPi
 make
 ```
 
