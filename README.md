@@ -41,6 +41,10 @@ Add this to /etc/udev/rules.d/99-usb-serial.rules
 SUBSYSTEM=="tty", ATTRS{idVendor}=="067b", ATTRS{idProduct}=="2303", ATTRS{product}=="USB-Serial Controller", SYMLINK+="ttyGPS"
 SUBSYSTEM=="tty", ATTRS{idVendor}=="0403", ATTRS{idProduct}=="6015", ATTRS{product}=="FT231X USB UART", SYMLINK+="ttyXBEE"
 ```
+And then run
+```
+sudo udevadm trigger
+```
 ### Run
 ```
 ./fly
