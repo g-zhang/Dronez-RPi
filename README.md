@@ -5,7 +5,7 @@
 ## Directories 
 * /OnboardThreads - Contains modules and threads of the program
 
-## Compiling
+## Setup
 * First install prerequisites:
 
 ### Open CV Installation
@@ -27,14 +27,6 @@ make
 sudo make install
 sudo ldconfig
 ```
-
-* Then:
-```
-cd Dronez-RPi
-make
-```
-
-## Running
 ### Setup USB rules
 Add this to /etc/udev/rules.d/99-usb-serial.rules
 ```
@@ -44,6 +36,13 @@ SUBSYSTEM=="tty", ATTRS{idVendor}=="0403", ATTRS{idProduct}=="6015", ATTRS{produ
 And then run
 ```
 sudo udevadm trigger
+```
+
+## Compiling and Running
+### Compile
+```
+cd Dronez-RPi
+make
 ```
 ### Run
 ```
